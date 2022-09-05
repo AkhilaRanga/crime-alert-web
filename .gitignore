@@ -1,9 +1,9 @@
 /.metadata
 /.git
 /backend/.metadata/
-/backend/crimealert/Login/target
-/backend/crimealert/Login/.settings
-/backend/crimealert/.settings
-/backend/crimealert/.project
-/backend/crimealert/Login/.classpath
-/backend/crimealert/Login/.project
+/backend/services/.settings
+/backend/services/.project
+/backend/services/target/
+/backend/Servers
+/backend/Servers2
+/backend/services/.classpath
