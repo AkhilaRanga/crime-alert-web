@@ -7,8 +7,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-
 import com.crimealert.models.User;
+import com.crimealert.models.UserLogin;
+import com.crimealert.services.UserLoginService;
 import com.crimealert.services.UserService;
 import com.crimealert.utils.ValidatorUtil;
 
@@ -46,6 +47,33 @@ public class UserController {
     		}
     	}catch(Exception ex)
     	{
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+    }
+    
+    @POST
+    @Path("login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response userLogin(UserLogin userLogin) {
+    	UserLoginService userLoginService = new UserLoginService();
+    	
+    	try {
+    		// Validate the received request body
+    		String validateResponse = ValidatorUtil.validateForm(userLogin);
+    		System.out.println("validateresponse" + validateResponse);
+    		
+    		if (validateResponse.isEmpty()) {
+    			String userLoginResponse = userLoginService.validateUserLogin(userLogin);
+        		System.out.println("Response received:" + userLoginResponse);
+        		return Response.ok(userLoginResponse).build();
+    		}
+    		else {
+    			System.out.println("Validation Error:" + validateResponse);
+    			return Response.status(400).entity(validateResponse).build();
+    		}
+    	} catch (Exception ex) {
     		System.out.println("Response failed:" + ex);
     		return Response.status(500).entity(ex.getMessage()).build();
     	}
