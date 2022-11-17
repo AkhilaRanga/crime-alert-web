@@ -17,7 +17,7 @@ public class UserLoginService {
 	
 	public String validateUserLogin(UserLogin userLogin)
 	{
-		String uri = "mongodb+srv://admin:crime-web@crime-alert-app-cluster.iqtzt6l.mongodb.net/?retryWrites=true&w=majority";
+		String uri = "";
 		
         try (MongoClient mongoClient = MongoClients.create(uri)) {
             MongoDatabase database = mongoClient.getDatabase(UserConstant.DB);
