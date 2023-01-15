@@ -15,38 +15,30 @@ public class UserLoginService {
 	
 	private PasswordUtils passwordUtil;
 	
-	public String validateUserLogin(UserLogin userLogin)
+	public String validateUserLogin(UserLogin userLogin, MongoClient mongoClient)
 	{
-		String uri = "";
-		
-        try (MongoClient mongoClient = MongoClients.create(uri)) {
-            MongoDatabase database = mongoClient.getDatabase(UserConstant.DB);
-            
-            try {
-                //Get user data from the collection
-                Document userDocument = database.getCollection(UserConstant.COLLECTION).
-                			find(eq(UserConstant.EMAIL, userLogin.getEmail())).first();
-                if (userDocument == null) {
-                	mongoClient.close();
-                    System.out.println("User email or password invalid");
-                    return "User login failed. User email id or password incorrect.";
-                }
-                String encodedPassword = userDocument.get(UserConstant.PASSWORD).toString();
-                String salt = userDocument.get(UserConstant.SALT).toString();
-                boolean isValidPassword = getPasswordUtil().verifyUserPassword(userLogin.getPassword(), encodedPassword, salt);
-                mongoClient.close();
-                if (isValidPassword) {
-                    System.out.println("User validated");
-                    return "User login successful";
-                }
-                else {
-                    System.out.println("User email or password invalid");
-                    return "User login failed. User email id or password incorrect.";
-                }
-            } catch (MongoException me) {
-                System.err.println("An error occurred while attempting to run a command: " + me);
-                throw me;
+        try {
+            //Get user data from the collection
+    		DBSearchService dbSearchService = new DBSearchService();
+            Document userDocument = dbSearchService.searchEmail(userLogin.getEmail(), mongoClient);
+            if (userDocument == null) {
+                System.out.println("User email or password invalid");
+                return "User login failed. User email id or password incorrect.";
             }
+            String encodedPassword = userDocument.get(UserConstant.PASSWORD).toString();
+            String salt = userDocument.get(UserConstant.SALT).toString();
+            boolean isValidPassword = getPasswordUtil().verifyUserPassword(userLogin.getPassword(), encodedPassword, salt);
+            if (isValidPassword) {
+                System.out.println("User validated");
+                return "User login successful";
+            }
+            else {
+                System.out.println("User email or password invalid");
+                return "User login failed. User email id or password incorrect.";
+            }
+        } catch (MongoException me) {
+            System.err.println("An error occurred while attempting to run a command: " + me);
+            throw me;
         }
 	}
 	
