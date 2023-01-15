@@ -30,7 +30,7 @@ public class UserController {
     @POST
     @Path("register")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response userRegistration(User user) {
     	UserService userService =  new UserService();
 
@@ -78,7 +78,7 @@ public class UserController {
     @POST
     @Path("login")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public Response userLogin(UserLogin userLogin) {
     	UserLoginService userLoginService = new UserLoginService();
     	
