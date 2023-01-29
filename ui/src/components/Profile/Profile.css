@@ -1,0 +1,11 @@
+.profile-form {
+  padding-top: 2px;
+  margin: 4%;
+}
+.profile-form div {
+  padding: 1%;
+}
+
+.profile-form input {
+  height: 0.5em;
+}
