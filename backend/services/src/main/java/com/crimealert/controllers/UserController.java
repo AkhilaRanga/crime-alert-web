@@ -1,7 +1,10 @@
 package com.crimealert.controllers;
 
-import jakarta.ws.rs.Consumes; 
+import jakarta.inject.Singleton;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
@@ -19,6 +22,7 @@ import com.crimealert.utils.ValidatorUtil;
 import com.mongodb.client.MongoClient;
 
 @Path("users")
+@Singleton
 public class UserController {
 
     /**
@@ -27,6 +31,15 @@ public class UserController {
      *
      * @return String that will be returned as a text/plain response.
      */
+	@Singleton
+	private UserService userService;
+	
+	public UserController()
+	{
+		userService =  new UserService();
+		System.out.println("In Constructor");
+		
+	}
     @POST
     @Path("register")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -103,5 +116,29 @@ public class UserController {
     		System.out.println("Response failed:" + ex);
     		return Response.status(500).entity(ex.getMessage()).build();
     	}
+    }
+    
+    @PUT
+    @Path("updateProfile")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response userProfileUpdate(User user)
+    {
+    	
+    	String response = userService.updateUserProfile(user);
+    	
+    	return Response.ok(response).build();
+    }
+    
+    @DELETE
+    @Path("deleteProfile")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response userProfileDelete(String email)
+    {
+    	System.out.println("Email" + email);
+    	String response = userService.deleteProfile(email);
+    	
+    	return Response.ok(response).build();
     }
 }
