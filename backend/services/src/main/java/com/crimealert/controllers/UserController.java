@@ -12,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 
 import org.bson.Document;
 
+import com.crimealert.Exceptions.ClientSideException;
 import com.crimealert.models.User;
 import com.crimealert.models.UserLogin;
 import com.crimealert.services.DBConnectionService;
@@ -33,47 +34,25 @@ public class UserController {
      */
 	@Singleton
 	private UserService userService;
+	@Singleton
+	private UserLoginService userLoginService;
 	
-	public UserController()
-	{
-		userService =  new UserService();
-		System.out.println("In Constructor");
-		
-	}
     @POST
     @Path("register")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response userRegistration(User user) {
-    	UserService userService =  new UserService();
-
     	try
     	{
     		
-    		String validateResponse = ValidatorUtil.validateForm(user);
+    		String validateResponse = ValidatorUtil.validateForm(user); // User side validations
     		
     		if (validateResponse.isEmpty())
-    		{
-        		DBConnectionService dbConnectionService = new DBConnectionService();
-        		MongoClient dBConnection = dbConnectionService.getDBConnection();
-        		// unique phone number and email id
-        		DBSearchService dbSearchService = new DBSearchService();
-        		Document userDocument = dbSearchService.searchEmail(user.getEmail(), dBConnection);
-        		if (userDocument != null) {
-        			dbConnectionService.closeDBConnection();
-        			System.out.println("Validation Error: Email already exists");
-        			return Response.status(400).entity("Email already exists").build();
-        		}
-        		userDocument = dbSearchService.searchPhoneNumber(user.getPhoneNumber(), dBConnection);
-        		if (userDocument != null) {
-        			dbConnectionService.closeDBConnection();
-        			System.out.println("Validation Error: Phone number already exists");
-        			return Response.status(400).entity("Phone number already exists").build();
-        		}
-        		
-	    		String userResponse= userService.createUserRegistration(user, dBConnection);
-    			dbConnectionService.closeDBConnection();
+    		{	
+	    		String userResponse= userService.createUserRegistration(user);
+	    		
 	    		System.out.println("Response received:" + userResponse);
+	    		
 	    		return Response.ok(userResponse).build();
     		}
     		else
@@ -93,7 +72,6 @@ public class UserController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response userLogin(UserLogin userLogin) {
-    	UserLoginService userLoginService = new UserLoginService();
     	
     	try {
     		// Validate the received request body
@@ -122,12 +100,22 @@ public class UserController {
     @Path("updateProfile")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response userProfileUpdate(User user)
+    public Response userProfileUpdate(User user) 
     {
+    	try {
     	
     	String response = userService.updateUserProfile(user);
     	
     	return Response.ok(response).build();
+    	} 
+    	catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	}
+    	catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
     }
     
     @DELETE
@@ -136,9 +124,18 @@ public class UserController {
     @Produces(MediaType.TEXT_PLAIN)
     public Response userProfileDelete(String email)
     {
-    	System.out.println("Email" + email);
+    	try {
     	String response = userService.deleteProfile(email);
     	
     	return Response.ok(response).build();
+    	} 
+    	catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	}
+    	catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
     }
 }
