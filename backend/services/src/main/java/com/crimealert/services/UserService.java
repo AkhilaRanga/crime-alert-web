@@ -1,7 +1,6 @@
 package com.crimealert.services;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 
 import static com.mongodb.client.model.Filters.eq;
 import com.crimealert.models.EncodedPassword;
@@ -14,7 +13,6 @@ import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
