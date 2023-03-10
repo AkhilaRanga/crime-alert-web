@@ -34,10 +34,10 @@ public class DBConnectionService {
 	}
 	
 	public MongoClient getDBConnection () {
-		if (this.mongoClient == null) {
+		//if (this.mongoClient == null) {
 			System.out.println("MongoClient Creation");
 			setDBConnection();
-		}
+		//}
 		return this.mongoClient;
 	}
 	

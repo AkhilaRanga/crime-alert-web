@@ -5,6 +5,8 @@ import java.util.Date;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import org.bson.types.ObjectId;
+
 import com.crimealert.enums.CrimeLevelEnum.crimeLevel;
 
 public class Post {

@@ -6,6 +6,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.bson.types.Binary;
+import org.bson.types.ObjectId;
 
 public class Video {
 	private String _id;
@@ -45,11 +46,11 @@ public class Video {
 	}
 
 	// videoIdGridFS
-	public String getImage() {
+	public String getVideoId() {
 		return this.videoIdGridFS;
 	}
 	
-	public void setImage(String videoIdGridFS) {
+	public void setVideoId(String videoIdGridFS) {
 		this.videoIdGridFS = videoIdGridFS;
 	}
 	
