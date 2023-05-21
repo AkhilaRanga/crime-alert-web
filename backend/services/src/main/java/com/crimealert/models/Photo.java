@@ -6,6 +6,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import org.bson.types.Binary;
+import org.bson.types.ObjectId;
 
 public class Photo {
 	private String _id;
