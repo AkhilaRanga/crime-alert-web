@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.bson.BsonBinarySubType;
@@ -33,8 +34,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.model.Filters;
+
+import jakarta.ws.rs.core.StreamingOutput;
 
 public class PostService {
 	
@@ -230,9 +234,28 @@ public class PostService {
 	
 	
 	
-	public Document[] listPosts() {
+	public List<Document> listPosts(String location) {
+		
+		List<Document> posts = new ArrayList<>();
+		
 		try {
 			//
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+
+            MongoDatabase database = mongoClient.getDatabase(PostConstant.DB);
+            
+            MongoCollection<Document> collection = database.getCollection(PostConstant.COLLECTION);
+
+            Bson filter = Filters.eq("location", location);
+            
+            FindIterable<Document> documents =  collection.find(filter);
+            
+            Iterator it = documents.iterator();
+            
+            while (it.hasNext()) {
+               posts.add((Document) it.next());
+            }
+           
 	    } catch (MongoException me) {
 	        System.err.println("An error occurred while attempting to run a command: " + me);
 	        throw me;
@@ -241,7 +264,8 @@ public class PostService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return new Document[1];
+		
+		return posts;
 	}
 
 	public Document getPost(String postId) {
@@ -308,6 +332,30 @@ public class PostService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
+	}
+	
+	public StreamingOutput downloadVideo(ObjectId videoId)
+	{
+		MongoClient mongoClient = getDBConnectionService().getDBConnection();
+
+        MongoDatabase database = mongoClient.getDatabase(VideoConstant.DB);
+        
+		GridFSBucket gridFSBucket = GridFSBuckets.create(database, VideoConstant.DB); 
+		// Replace "your-bucket" with your actual GridFS bucket name
+        GridFSDownloadStream downloadStream = gridFSBucket.openDownloadStream(videoId);
+        
+        StreamingOutput streamingOutputVideo = output -> {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = downloadStream.read(buffer)) != -1) {
+                output.write(buffer, 0, bytesRead);
+            }
+            downloadStream.close();
+        };
+        
+        mongoClient.close();
+        
+        return streamingOutputVideo;
 	}
 	
 	public Document updatePost(String postId, Post post) {

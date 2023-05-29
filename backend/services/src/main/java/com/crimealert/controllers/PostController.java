@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bson.Document;
 import org.bson.types.Binary;
+import org.bson.types.ObjectId;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.ContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -27,8 +28,10 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 @Path("posts")
 @Singleton
@@ -149,9 +152,9 @@ public class PostController {
 	
 	@GET
     @Produces(MediaType.APPLICATION_JSON)
-	public Response listPosts() {
+	public Response listPosts(@QueryParam("location") String location) {
     	try {
-    		Document[] response = postService.listPosts();
+    		List<Document> response = postService.listPosts(location);
     		return Response.ok(response).build();
     	} catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);
@@ -165,7 +168,7 @@ public class PostController {
 	@GET
     @Produces(MediaType.APPLICATION_JSON)
 	@Path("getPost")
-	public Response getPost(String postId) {
+	public Response getPost(@QueryParam("postId")String postId) {
     	try {
     		Document response = getPostService().getPost(postId);
     		if(response != null)
@@ -184,10 +187,38 @@ public class PostController {
 	@GET
     @Produces(MediaType.APPLICATION_JSON)
 	@Path("getPhoto")
-	public Response getPhoto(String photoId) {
+	public Response getPhoto(@QueryParam("photoId")String photoId) {
     	try {
     		Document photoResponse = getPostService().getPhoto(photoId);
     		return Response.ok(photoResponse.toJson()).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@GET
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("downloadPhoto")
+	public Response downloadPhoto(@PathParam("photoId")String photoId) {
+    	try {
+    		Document photoResponse = getPostService().getPhoto(photoId);
+    		
+    		String imageName = photoResponse.get("title").toString();
+    		
+    		Binary image = photoResponse.get("image", org.bson.types.Binary.class);
+    		
+    		StreamingOutput streamingOutputImage = output -> {
+                byte[] data = image.getData();
+                output.write(data);
+            };
+    		
+    		return Response.ok(streamingOutputImage, MediaType.APPLICATION_OCTET_STREAM)
+    				.header("Content-Disposition", "attachment; filename=\"" + imageName + "\"")
+    				.build();
     	} catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);
     		return Response.status(400).entity(ex.getMessage()).build();
@@ -204,6 +235,29 @@ public class PostController {
     	try {
     		Document videoResponse = getPostService().getVideo(videoId);
     		return Response.ok(videoResponse.toJson()).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@GET
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("downloadVideo")
+	public Response downloadVideo(@PathParam("videoId")String videoId) {
+    	try {
+    		Document video = getPostService().getVideo(videoId);
+    		
+    		String videos = video.get("videoIdGridFS").toString();
+    		
+    		StreamingOutput streamingOutputVideo = getPostService().downloadVideo(new ObjectId(videos));
+    		
+    		return Response.ok(streamingOutputVideo, MediaType.APPLICATION_OCTET_STREAM)
+    				.header("Content-Disposition", "attachment; filename=\"" + video.get("title") + "\"")
+    				.build();
     	} catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);
     		return Response.status(400).entity(ex.getMessage()).build();
