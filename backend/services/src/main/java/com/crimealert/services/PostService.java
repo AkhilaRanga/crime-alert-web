@@ -1,5 +1,7 @@
 package com.crimealert.services;
 
+import static com.mongodb.client.model.Filters.eq;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,9 +23,11 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import com.crimealert.Exceptions.ClientSideException;
 import com.crimealert.constants.PhotoConstant;
 import com.crimealert.constants.PostConstant;
+import com.crimealert.constants.UserConstant;
 import com.crimealert.constants.VideoConstant;
 import com.crimealert.models.Photo;
 import com.crimealert.models.Post;
+import com.crimealert.models.User;
 import com.crimealert.models.Video;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
@@ -35,6 +39,8 @@ import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 
 public class PostService {
 	
@@ -310,9 +316,23 @@ public class PostService {
 	    }
 	}
 	
-	public Document updatePost(String postId, Post post) {
+	public Document updatePost(Post post, String postId) {
+		Document updateDocument;
 		try {
-			//
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+			MongoCollection<Document> postCollection = mongoClient
+					.getDatabase(PostConstant.DB)
+					.getCollection(PostConstant.COLLECTION);
+			
+			// Check post exists
+			Document postDocument = postCollection.find(eq(PostConstant._ID, new ObjectId(postId))).first();
+			if(postDocument == null)
+				throw new ClientSideException("Post with given id does not exist");
+			
+			// update the post
+			updateDocument = updatePostHelper(post, postDocument, postCollection);
+			getDBConnectionService().closeDBConnection();
+			System.out.println("Document update complete");
 	    } catch (MongoException me) {
 	        System.err.println("An error occurred while attempting to run a command: " + me);
 	        throw me;
@@ -321,13 +341,101 @@ public class PostService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return new Document();
-		
+	    return updateDocument;
+	}
+	
+	public String deletePhoto(String photoId) {
+		try {
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+			MongoCollection<Document> photoCollection = mongoClient
+													.getDatabase(PhotoConstant.DB)
+													.getCollection(PhotoConstant.COLLECTION);
+			
+			// Check photo exists
+			Document photoDocument = photoCollection.find(eq(PhotoConstant._ID, new ObjectId(photoId))).first();
+			if(photoDocument == null)
+				throw new ClientSideException("Photo with given id does not exist");
+
+			 //Deleting the photo
+		     DeleteResult photoDeleteResponse = photoCollection.deleteOne(eq(PhotoConstant._ID, new ObjectId(photoId)));
+		     System.out.println("Deletion result" + photoDeleteResponse);
+		     
+		     getDBConnectionService().closeDBConnection();
+	    } catch (MongoException me) {
+	        System.err.println("An error occurred while attempting to run a command: " + me);
+	        throw me;
+	    }
+	    catch (ClientSideException ce) {
+	        System.err.println("An error occurred while attempting to run a command: " + ce);
+	        throw ce;
+	    }
+	    return "Photo deleted successfully:" + photoId;
+	}
+	
+	public String deleteVideo(String videoId) {
+		try {
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+			MongoCollection<Document> videoCollection = mongoClient
+					.getDatabase(VideoConstant.DB)
+					.getCollection(VideoConstant.COLLECTION);
+			MongoCollection<Document> videoFilesCollection = mongoClient
+					.getDatabase(VideoConstant.DB)
+					.getCollection("videos.files");
+			
+			// Check video exists
+			Document videoDocument = videoCollection.find(eq(VideoConstant._ID, new ObjectId(videoId))).first();
+			if(videoDocument == null)
+				throw new ClientSideException("Video with given id does not exist");
+		     
+			 //Deleting the video
+		     DeleteResult videoDeleteResponse1 = videoFilesCollection.deleteOne(eq(VideoConstant._ID, new ObjectId(videoDocument.getString("videoIdGridFS"))));
+		     DeleteResult videoDeleteResponse2 = videoCollection.deleteOne(eq(VideoConstant._ID, new ObjectId(videoId)));
+		     System.out.println("Deletion result" + videoDeleteResponse1);
+		     System.out.println("Deletion result" + videoDeleteResponse2);
+		     
+		     getDBConnectionService().closeDBConnection();
+	    } catch (MongoException me) {
+	        System.err.println("An error occurred while attempting to run a command: " + me);
+	        throw me;
+	    }
+	    catch (ClientSideException ce) {
+	        System.err.println("An error occurred while attempting to run a command: " + ce);
+	        throw ce;
+	    }
+	    return "Video deleted successfully:" + videoId;
 	}
 
 	public String deletePost(String postId) {
 		try {
-			//
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+			MongoCollection<Document> photoCollection = mongoClient
+													.getDatabase(PhotoConstant.DB)
+													.getCollection(PhotoConstant.COLLECTION);
+			MongoCollection<Document> videoCollection = mongoClient
+					.getDatabase(VideoConstant.DB)
+					.getCollection(VideoConstant.COLLECTION);
+			MongoCollection<Document> postCollection = mongoClient
+					.getDatabase(PostConstant.DB)
+					.getCollection(PostConstant.COLLECTION);
+			
+			// Check post exists
+			Document postDocument = postCollection.find(eq(PostConstant._ID, new ObjectId(postId))).first();
+			if(postDocument == null)
+				throw new ClientSideException("Post with given id does not exist");
+
+			 //Deleting the photos
+		     DeleteResult photoDeleteResponse = photoCollection.deleteMany(eq(PhotoConstant.POST_ID, new ObjectId(postId)));
+		     System.out.println("Deletion result" + photoDeleteResponse);
+		     
+			 //Deleting the videos
+		     DeleteResult videoDeleteResponse = videoCollection.deleteOne(eq(VideoConstant.POST_ID, new ObjectId(postId)));
+		     System.out.println("Deletion result" + videoDeleteResponse);
+		     
+			 //Deleting the post
+		     DeleteResult postDeleteResponse = postCollection.deleteOne(eq(PostConstant._ID, new ObjectId(postId)));
+		     System.out.println("Deletion result" + postDeleteResponse);
+		     
+		     getDBConnectionService().closeDBConnection();
 	    } catch (MongoException me) {
 	        System.err.println("An error occurred while attempting to run a command: " + me);
 	        throw me;
@@ -336,7 +444,36 @@ public class PostService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return "Post deleted successfully" + postId;
+	    return "Post deleted successfully:" + postId;
+	}
+	
+	private Document updatePostHelper(Post post, Document searchedPost, MongoCollection<Document> collection)
+	{
+		Document query = new Document();
+		query.append(PostConstant._ID, post.getId());
+		
+		Document setData = new Document();
+        //update post
+		if(!post.getTitle().equals(searchedPost.get(PostConstant.TITLE)))
+			setData.append(PostConstant.TITLE, post.getTitle());
+		if(!post.getDescription().equals(searchedPost.get(PostConstant.DESCRIPTION)))
+			setData.append(PostConstant.DESCRIPTION, post.getDescription());
+		if(!post.getLocation().equals(searchedPost.get(PostConstant.LOCATION)))
+			setData.append(PostConstant.LOCATION, post.getLocation());
+		if(!post.getCrimeType().equals(searchedPost.get(PostConstant.CRIME_TYPE)))
+			setData.append(PostConstant.CRIME_TYPE, post.getLocation());
+		if(post.getLikesCount() != searchedPost.getInteger(PostConstant.LIKES_COUNT))
+			setData.append(PostConstant.LIKES_COUNT, post.getLikesCount());
+		if(post.getIsFlagged() != searchedPost.getBoolean(PostConstant.IS_FLAGGED))
+			setData.append(PostConstant.IS_FLAGGED, post.getLocation());
+		setData.append(PostConstant.TIME_UPDATED, new Date());
+		
+		Document updateDocument = new Document();
+		updateDocument.append("$set", setData);
+        UpdateResult postUpdateResponse = collection.updateOne(query, updateDocument);
+        
+        System.out.println("Post updation response" + postUpdateResponse);
+        return updateDocument;
 	}
 
 	public DBConnectionService getDBConnectionService()
