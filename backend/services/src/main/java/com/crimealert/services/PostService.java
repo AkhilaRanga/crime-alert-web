@@ -513,7 +513,7 @@ public class PostService {
 		if(post.getLikesCount() != searchedPost.getInteger(PostConstant.LIKES_COUNT))
 			setData.append(PostConstant.LIKES_COUNT, post.getLikesCount());
 		if(post.getIsFlagged() != searchedPost.getBoolean(PostConstant.IS_FLAGGED))
-			setData.append(PostConstant.IS_FLAGGED, post.getLocation());
+			setData.append(PostConstant.IS_FLAGGED, post.getIsFlagged());
 		setData.append(PostConstant.TIME_UPDATED, new Date());
 		
 		Document updateDocument = new Document();
