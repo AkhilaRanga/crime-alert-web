@@ -29,7 +29,7 @@ public class UserService {
 
         	MongoClient mongoClient = getDBConnectionService().getDBConnection();
              
-            Document userDoc = userValidation.emailExists(user.getEmail(), getDBSearchService(), mongoClient);
+            Document userDoc = getUserValidation().emailExists(user.getEmail(), getDBSearchService(), mongoClient);
             
             if(userDoc != null)
             	throw new ClientSideException("User exists");

@@ -17,6 +17,7 @@ import com.crimealert.models.User;
 import com.crimealert.models.UserLogin;
 import com.crimealert.services.DBConnectionService;
 import com.crimealert.services.DBSearchService;
+import com.crimealert.services.PostService;
 import com.crimealert.services.UserLoginService;
 import com.crimealert.services.UserService;
 import com.crimealert.utils.ValidatorUtil;
@@ -26,15 +27,7 @@ import com.mongodb.client.MongoClient;
 @Singleton
 public class UserController {
 
-    /**
-     * Method handling HTTP GET requests. The returned object will be sent
-     * to the client as "text/plain" media type.
-     *
-     * @return String that will be returned as a text/plain response.
-     */
-	@Singleton
 	private UserService userService;
-	@Singleton
 	private UserLoginService userLoginService;
 	
     @POST
@@ -49,7 +42,7 @@ public class UserController {
     		
     		if (validateResponse.isEmpty())
     		{	
-	    		String userResponse= userService.createUserRegistration(user);
+	    		String userResponse= getUserService().createUserRegistration(user);
 	    		
 	    		System.out.println("Response received:" + userResponse);
 	    		
@@ -81,7 +74,7 @@ public class UserController {
     		if (validateResponse.isEmpty()) {
         		DBConnectionService dbConnectionService = new DBConnectionService();
         		MongoClient dBConnection = dbConnectionService.getDBConnection();
-    			String userLoginResponse = userLoginService.validateUserLogin(userLogin, dBConnection);
+    			String userLoginResponse = getUserLoginService().validateUserLogin(userLogin, dBConnection);
 	    		dbConnectionService.closeDBConnection();
         		System.out.println("Response received:" + userLoginResponse);
         		return Response.ok(userLoginResponse).build();
@@ -104,7 +97,7 @@ public class UserController {
     {
     	try {
     	
-    	String response = userService.updateUserProfile(user);
+    	String response = getUserService().updateUserProfile(user);
     	
     	return Response.ok(response).build();
     	} 
@@ -125,7 +118,7 @@ public class UserController {
     public Response userProfileDelete(String email)
     {
     	try {
-    	String response = userService.deleteProfile(email);
+    	String response = getUserService().deleteProfile(email);
     	
     	return Response.ok(response).build();
     	} 
@@ -138,4 +131,18 @@ public class UserController {
     		return Response.status(500).entity(ex.getMessage()).build();
     	}
     }
+	
+	public UserService getUserService()
+	{
+		if(userService == null)
+			userService = new UserService();
+		return userService;
+	}
+	
+	public UserLoginService getUserLoginService()
+	{
+		if(userLoginService == null)
+			userLoginService = new UserLoginService();
+		return userLoginService;
+	}
 }

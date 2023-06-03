@@ -40,10 +40,10 @@ public class PostController {
 	private PostService postService;
 	
 	@POST
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
 	public Response createPost(
-			@FormDataParam("post") Post post
+			Post post
 	) {
     	try {
     		String validateResponse = ValidatorUtil.validateForm(post);
@@ -268,19 +268,16 @@ public class PostController {
 	}
 	
 	@PUT
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-	public Response updatePost(
-			@PathParam("postId") String postId,
-			@FormDataParam("post") Post post,
-			@FormDataParam("image") Binary[] images,
-			@FormDataParam("video") InputStream[] videos
-	) {
+	@Path("/{postId}")
+	public Response updatePost(@PathParam("postId") String postId, Post post) {
     	try {
     		String validateResponse = ValidatorUtil.validateForm(post);
     		if (validateResponse.isEmpty()) {
-    			Document response = postService.updatePost(postId, post);
-        		return Response.ok(response).build();
+    			Document response = getPostService().updatePost(post, postId);
+        		System.out.println("Post Updation Response : " + response.toJson());
+        		return Response.ok(response.toJson()).build();
     		} else {
     			return Response.status(400).entity(validateResponse).build();
     		}
@@ -292,12 +289,48 @@ public class PostController {
     		return Response.status(500).entity(ex.getMessage()).build();
     	}
 	}
+
+	@DELETE
+    @Produces(MediaType.TEXT_PLAIN)
+	@Path("deletePhoto/{photoId}")
+	public Response deletePhoto(@PathParam("photoId") String photoId) {
+    	try {
+    		String response = getPostService().deletePhoto(photoId);
+    		System.out.println("Photo Deletion Response : " + photoId + " " + response);
+    		return Response.ok(response).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
 	
 	@DELETE
     @Produces(MediaType.TEXT_PLAIN)
+	@Path("deleteVideo/{videoId}")
+	public Response deleteVideo(@PathParam("videoId") String videoId) {
+    	try {
+    		String response = getPostService().deleteVideo(videoId);
+    		System.out.println("Video Deletion Response : " + videoId + " " + response);
+    		return Response.ok(response).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@DELETE
+    @Produces(MediaType.TEXT_PLAIN)
+	@Path("/{postId}")
 	public Response deletePost(@PathParam("postId") String postId) {
     	try {
-    		String response = postService.deletePost(postId);
+    		String response = getPostService().deletePost(postId);
+    		System.out.println("Post Deletion Response : " + response);
     		return Response.ok(response).build();
     	} catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);
