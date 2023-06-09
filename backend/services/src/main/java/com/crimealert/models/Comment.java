@@ -68,7 +68,7 @@ public class Comment {
 		return this.comment;
 	}
 	
-	public void setDescription(String comment) {
+	public void setComment(String comment) {
 		this.comment = comment;
 	}
 	

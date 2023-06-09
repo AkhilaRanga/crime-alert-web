@@ -39,7 +39,7 @@ public class CommentService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return document; // return post id
+	    return document;
 	}
 	
 	public Document updateComment(Comment comment) {
@@ -47,6 +47,8 @@ public class CommentService {
         try {
 
         	MongoClient mongoClient = getDBConnectionService().getDBConnection();
+        	
+        	System.out.println("Retrieved mongoclient");
 
         	MongoCollection<Document> commentCollection = mongoClient
 					.getDatabase(CommentConstant.DB)
@@ -61,7 +63,7 @@ public class CommentService {
 			document = updateCommentHelper(comment,oldComment);
 			
 			Document query = new Document();
-			query.append(CommentConstant._ID, comment.getId());
+			query.append(CommentConstant._ID, new ObjectId(comment.getId()));
 			
 			UpdateResult postUpdateResponse = commentCollection.updateOne(query, document);
 			
@@ -77,7 +79,7 @@ public class CommentService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return document; // return post id
+	    return document;
 	}
 	
 	public List<Document> listComments(String postId) {
@@ -96,7 +98,7 @@ public class CommentService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return comments; // return post id
+	    return comments; 
 	}
 	
 	public Document getComment(String commentId) {
@@ -115,7 +117,7 @@ public class CommentService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return comment; // return post id
+	    return comment; 
 	}
 	
 	public Document deleteComment(String commentId) {
@@ -129,6 +131,8 @@ public class CommentService {
 					.getCollection(CommentConstant.COLLECTION);
         	
         	oldComment = commentCollection.find(eq(CommentConstant._ID, new ObjectId(commentId))).first();
+        	
+        	
             
 			if(oldComment == null)
 				throw new ClientSideException("Comment with given id does not exist");
@@ -164,7 +168,7 @@ public class CommentService {
 		
 		
 		Document setData = new Document();
-        //update post
+        //update comment
 		if(!newComment.getComment().equals(oldComment.get(CommentConstant.COMMENT)))
 			setData.append(CommentConstant.COMMENT, newComment.getComment());
 		if(newComment.getLikesCount() != oldComment.getInteger(CommentConstant.LIKES_COUNT))
