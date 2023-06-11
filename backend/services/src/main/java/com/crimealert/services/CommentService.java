@@ -137,20 +137,22 @@ public class CommentService {
 			if(oldComment == null)
 				throw new ClientSideException("Comment with given id does not exist");
 			
-			if(oldComment.get("parentId") == null || oldComment.get("parentId").toString().isEmpty())
+			if(oldComment.get(CommentConstant.PARENT_ID) == null || oldComment.get(CommentConstant.PARENT_ID).toString().isEmpty())
 			{
-				FindIterable<Document>childComments = commentCollection.find(eq(CommentConstant.PARENT_ID, new ObjectId(commentId)));
+				
+				FindIterable<Document>childComments = commentCollection.find(eq(CommentConstant.PARENT_ID, commentId));
+				
+				System.out.println("Number of child comments : " +  childComments.first());
 				
 				for (Document document : childComments) {
-					commentCollection.deleteOne(document);
+					System.out.println("Child doc:" +  document.get(CommentConstant._ID));
+					commentCollection.deleteOne(eq(CommentConstant._ID, document.get(CommentConstant._ID)));
 				}
 				
 			}
-			else
-			{
-				DeleteResult commentDeleteResponse = commentCollection.deleteOne(eq(CommentConstant._ID, new ObjectId(commentId)));
-			     System.out.println("Deletion result" + commentDeleteResponse);
-			}
+		
+			DeleteResult commentDeleteResponse = commentCollection.deleteOne(eq(CommentConstant._ID, new ObjectId(commentId)));
+			System.out.println("Deletion result" + commentDeleteResponse);
             
         } catch (MongoException me) {
 	        System.err.println("An error occurred while attempting to run a command: " + me);

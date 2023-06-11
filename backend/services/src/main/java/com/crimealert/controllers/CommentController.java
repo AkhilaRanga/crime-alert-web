@@ -9,6 +9,7 @@ import com.crimealert.models.Comment;
 import com.crimealert.services.CommentService;
 import com.crimealert.utils.ValidatorUtil;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -75,12 +76,13 @@ public class CommentController {
 	
 	@DELETE
     @Produces(MediaType.APPLICATION_JSON)
+	@Path("/{commentId}")
 	public Response deleteComment(
-			@PathParam("commentId")String commentId
+			@NotNull@PathParam("commentId")String commentId
 	) {
     	try {
     	
-    		if (commentId != null && !commentId.isEmpty()){
+    		if (!commentId.isEmpty()){
     			
         	Document response = getCommentService().deleteComment(commentId);
         		
