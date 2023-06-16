@@ -9,6 +9,7 @@ import com.crimealert.models.Comment;
 import com.crimealert.services.CommentService;
 import com.crimealert.utils.ValidatorUtil;
 
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -57,14 +58,18 @@ public class CommentController {
 			 Comment comment
 	) {
     	try {
-    	
+
+    		if ((comment.getComment() != null && !comment.getComment().isEmpty()) && (comment.getId() != null && !comment.getId().isEmpty())) {
     			
         	Document response = getCommentService().updateComment(comment);
         		
         	System.out.println("Post Update Response : " + response.toJson());
-        		
+        	
         	return Response.ok(response.toJson()).build();
-    		
+    		} else {
+    			return Response.status(400).entity("Comment or Comment Id cannot be empty").build();
+    		}
+        		
     	} catch (ClientSideException ex) {
     		return Response.status(400).entity(ex.getMessage()).build();
     	} catch (Exception ex) {
@@ -73,19 +78,25 @@ public class CommentController {
 	}
 	
 	@DELETE
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+	@Path("/{commentId}")
 	public Response deleteComment(
-			@PathParam("commentId")String commentId
+			@NotNull@PathParam("commentId")String commentId
 	) {
     	try {
     	
+    		if (!commentId.isEmpty()){
     			
         	Document response = getCommentService().deleteComment(commentId);
         		
         	System.out.println("Post Deletion Response : " + response.toJson());
         		
         	return Response.ok(response.toJson()).build();
+    		}
+    		else {
+    			return Response.status(400).entity("Comment Id cannot be empty").build();
+    		}
+    		
     		
     	} catch (ClientSideException ex) {
     		return Response.status(400).entity(ex.getMessage()).build();
