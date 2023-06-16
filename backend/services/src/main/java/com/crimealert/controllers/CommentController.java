@@ -18,6 +18,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -33,14 +34,16 @@ public class CommentController {
 			Comment comment
 	) {
     	try {
-    	
-    			
-        	Document response = getCommentService().createComment(comment);
-        		
-        	System.out.println("Post Insertion Response : " + response.toJson());
-        		
-        	return Response.ok(response.toJson()).build();
+    		String validateResponse = ValidatorUtil.validateForm(comment);
+    		System.out.println("Comment Validation Response : " + validateResponse);
     		
+    		if (validateResponse.isEmpty()) {
+    			Document response = getCommentService().createComment(comment);
+    			System.out.println("Comment Insertion Response : " + response.toJson());
+        		return Response.ok(response.toJson()).build();
+    		} else {
+    			return Response.status(400).entity(validateResponse).build();
+    		}
     	} catch (ClientSideException ex) {
     		return Response.status(400).entity(ex.getMessage()).build();
     	} catch (Exception ex) {
@@ -105,18 +108,14 @@ public class CommentController {
 	@GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+	@Path("/query")
 	public Response listComments(
-			@PathParam("postId")String postId
+			@QueryParam("postId")String postId
 	) {
-    	try {
-    	
-    			
+    	try {	
         	List<Document> response = getCommentService().listComments(postId);
-        		
-        	System.out.println("List Response : " + response.toString());
-        		
+        	System.out.println("List Posts Response : " + response.toString());
         	return Response.ok(response).build();
-    		
     	} catch (ClientSideException ex) {
     		return Response.status(400).entity(ex.getMessage()).build();
     	} catch (Exception ex) {

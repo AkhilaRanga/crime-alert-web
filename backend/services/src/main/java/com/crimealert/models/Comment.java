@@ -7,18 +7,20 @@ import javax.validation.constraints.NotNull;
 
 public class Comment {
 	private String _id;
-	
+
+	@NotNull(message = "userId cannot be null")
+	@NotEmpty(message = "userId cannot be empty")
 	private String userId;
 	
 	@NotNull(message = "postId cannot be null")
 	@NotEmpty(message = "postId cannot be empty")
 	private String postId;
-	
-	private String parentId;
 
 	@NotNull(message = "Comment cannot be null")
 	@NotEmpty(message = "Comment cannot be empty")
 	private String comment;
+	
+	private String parentId;
 
 	private boolean isFlagged;
 	

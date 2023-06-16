@@ -1,7 +1,7 @@
 package com.crimealert.constants;
 
 public class UserConstant {
-	
+	public static final String _ID = "_id";
 	public static final String FULL_NAME = "fullName";
 	public static final String EMAIL = "email";
 	public static final String LOCATION = "location";
