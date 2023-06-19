@@ -8,21 +8,27 @@ import com.mongodb.client.MongoClient;
 
 public class UserValidation {
 	
-	public Document emailExists(String email,  DBSearchService dbSearchService, MongoClient mongoClient) throws ClientSideException
+	public Document emailExists(String email,  DBSearchService dbSearchService, MongoClient mongoClient, boolean shouldExist) throws ClientSideException
 	{
 		Document userDocument = dbSearchService.searchEmail(email, mongoClient);
 		
-		if(userDocument == null)
-			throw new ClientSideException("User does not exist");
+		if(shouldExist && userDocument == null)
+			throw new ClientSideException("User with email does not exist");
+		
+		if(!shouldExist && userDocument != null)
+			throw new ClientSideException("User with email exists");
 		
 		return userDocument;
 	}
 
-	public void phoneExists(String phone,  DBSearchService dbSearchService, MongoClient mongoClient) throws ClientSideException
+	public void phoneExists(String phone,  DBSearchService dbSearchService, MongoClient mongoClient, boolean shouldExist) throws ClientSideException
 	{
 		Document userDocument = dbSearchService.searchPhoneNumber(phone, mongoClient);
 		
-		if(userDocument != null)
-			throw new ClientSideException("Phone number exists");
+		if(shouldExist && userDocument == null)
+			throw new ClientSideException("User with phone number does not exist");
+		
+		if(!shouldExist && userDocument != null)
+			throw new ClientSideException("User with phone number exists");
 	}
 }
