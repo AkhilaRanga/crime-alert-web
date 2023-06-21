@@ -29,12 +29,9 @@ public class UserService {
 
         	MongoClient mongoClient = getDBConnectionService().getDBConnection();
              
-            Document userDoc = getUserValidation().emailExists(user.getEmail(), getDBSearchService(), mongoClient);
+            getUserValidation().emailExists(user.getEmail(), getDBSearchService(), mongoClient, false);
             
-            if(userDoc != null)
-            	throw new ClientSideException("User exists");
-            
-            userValidation.phoneExists(user.getPhoneNumber(), getDBSearchService(), mongoClient);
+            userValidation.phoneExists(user.getPhoneNumber(), getDBSearchService(), mongoClient, false);
             
             MongoDatabase database = mongoClient.getDatabase(UserConstant.DB);
         	//Preparing a document
@@ -62,7 +59,7 @@ public class UserService {
 		{
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 			
-			Document searchedDoc = userValidation.emailExists(user.getEmail(), getDBSearchService(), mongoClient);
+			userValidation.emailExists(user.getEmail(), getDBSearchService(), mongoClient, true);
 			
 	        
 			MongoCollection<Document> collection = mongoClient
@@ -91,7 +88,7 @@ public class UserService {
 		{
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 					
-			userValidation.emailExists(email, getDBSearchService(), mongoClient);
+			userValidation.emailExists(email, getDBSearchService(), mongoClient, true);
 			
 			MongoCollection<Document> collection = mongoClient
 													.getDatabase(UserConstant.DB)

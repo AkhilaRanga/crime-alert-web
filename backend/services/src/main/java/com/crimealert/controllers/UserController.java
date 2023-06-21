@@ -1,11 +1,13 @@
 package com.crimealert.controllers;
 
 import jakarta.inject.Singleton;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -83,6 +85,23 @@ public class UserController {
     			System.out.println("Validation Error:" + validateResponse);
     			return Response.status(400).entity(validateResponse).build();
     		}
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+    }
+    
+    @POST
+    @Path("logout/{userId}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response userLogout(@NotNull@PathParam("userId")String userId) {
+    	try {
+    		String response = getUserLoginService().userLogout(userId);
+    		System.out.println("User Logout Successful: " + response);
+    		return Response.ok(response).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
     	} catch (Exception ex) {
     		System.out.println("Response failed:" + ex);
     		return Response.status(500).entity(ex.getMessage()).build();
