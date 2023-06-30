@@ -49,10 +49,15 @@ import jakarta.ws.rs.core.StreamingOutput;
 public class PostService {
 	
 	private DBConnectionService dbConnectionService;
+	private UserLoginService userLoginService;
 	
 	public Document createPost(Post post) {
 			Document document;
 	        try {
+	        	Document userLoggedIn = getUserLoginService().searchSession(post.getUserId());
+				
+				if(userLoggedIn == null)
+					throw new ClientSideException("User is not logged In");
 
 	        	MongoClient mongoClient = getDBConnectionService().getDBConnection();
 
@@ -367,6 +372,10 @@ public class PostService {
 	public Document updatePost(Post post, String postId) {
 		Document updateDocument;
 		try {
+			Document userLoggedIn = getUserLoginService().searchSession(post.getUserId());
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 			MongoCollection<Document> postCollection = mongoClient
 					.getDatabase(PostConstant.DB)
@@ -453,8 +462,12 @@ public class PostService {
 	    return "Video deleted successfully:" + videoId;
 	}
 
-	public String deletePost(String postId) {
+	public String deletePost(String postId, String userId) {
 		try {
+			Document userLoggedIn = getUserLoginService().searchSession(userId);
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 			MongoCollection<Document> photoCollection = mongoClient
 													.getDatabase(PhotoConstant.DB)
@@ -529,5 +542,12 @@ public class PostService {
 		if(dbConnectionService == null)
 			dbConnectionService = new DBConnectionService();
 		return dbConnectionService;
+	}
+	
+	public UserLoginService getUserLoginService()
+	{
+		if(userLoginService == null)
+			userLoginService = new UserLoginService();
+		return userLoginService;
 	}
 }

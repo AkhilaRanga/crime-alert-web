@@ -21,6 +21,7 @@ public class UserService {
 	private PasswordUtils passwordUtil;
 	private DBConnectionService dbConnectionService;
 	private DBSearchService dbSearchService;
+	private UserLoginService userLoginService;
 	private UserValidation userValidation;
 	
 	public String createUserRegistration(User user)
@@ -57,9 +58,14 @@ public class UserService {
 	{
 		try
 		{
+			Document userLoggedIn = getUserLoginService().searchSession(user.getEmail());
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
+				
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 			
-			userValidation.emailExists(user.getEmail(), getDBSearchService(), mongoClient, true);
+			Document searchedDoc = userValidation.emailExists(user.getEmail(), getDBSearchService(), mongoClient, true);
 			
 	        
 			MongoCollection<Document> collection = mongoClient
@@ -86,6 +92,11 @@ public class UserService {
 	{
 		try
 		{
+			Document userLoggedIn = getUserLoginService().searchSession(email);
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
+			
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 					
 			userValidation.emailExists(email, getDBSearchService(), mongoClient, true);
@@ -143,6 +154,12 @@ public class UserService {
 		return userValidation;
 	}
 	
+	public UserLoginService getUserLoginService()
+	{
+		if(userLoginService == null)
+			userLoginService = new UserLoginService();
+		return userLoginService;
+	}
 	private void updateUserHelper(User user, Document searchedUser, MongoCollection<Document> collection)
 	{
 		Document query = new Document();

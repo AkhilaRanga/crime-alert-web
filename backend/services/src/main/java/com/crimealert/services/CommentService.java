@@ -26,6 +26,7 @@ import com.mongodb.client.result.UpdateResult;
 public class CommentService {
 	
 	private DBConnectionService dbConnectionService;
+	private UserLoginService userLoginService;
 	
 	private Document prepareCommentInsert(Comment comment)
 	{
@@ -43,6 +44,11 @@ public class CommentService {
 	public Document createComment(Comment comment) {
 		Document createDocument;
         try {
+        	Document userLoggedIn = getUserLoginService().searchSession(comment.getUserId());
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
+			
         	MongoClient mongoClient = getDBConnectionService().getDBConnection();
             MongoCollection<Document> commentsCollection = mongoClient
 					.getDatabase(CommentConstant.DB)
@@ -77,6 +83,10 @@ public class CommentService {
 	public Document updateComment(Comment comment) {
 		Document document = null;
         try {
+        	Document userLoggedIn = getUserLoginService().searchSession(comment.getUserId());
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
 
         	MongoClient mongoClient = getDBConnectionService().getDBConnection();
         	
@@ -156,9 +166,13 @@ public class CommentService {
 	    return comment; 
 	}
 	
-	public Document deleteComment(String commentId) {
+	public Document deleteComment(String commentId, String userId) {
 		Document oldComment = null;
         try {
+        	Document userLoggedIn = getUserLoginService().searchSession(userId);
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
 
         	MongoClient mongoClient = getDBConnectionService().getDBConnection();
 
@@ -227,6 +241,13 @@ public class CommentService {
 		if(dbConnectionService == null)
 			dbConnectionService = new DBConnectionService();
 		return dbConnectionService;
+	}
+	
+	public UserLoginService getUserLoginService()
+	{
+		if(userLoginService == null)
+			userLoginService = new UserLoginService();
+		return userLoginService;
 	}
 
 }
