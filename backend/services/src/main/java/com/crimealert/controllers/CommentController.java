@@ -79,15 +79,15 @@ public class CommentController {
 	
 	@DELETE
     @Produces(MediaType.APPLICATION_JSON)
-	@Path("/{commentId}")
+	@Path("/{commentId}/{userId}")
 	public Response deleteComment(
-			@NotNull@PathParam("commentId")String commentId
+			@NotNull@PathParam("commentId")String commentId,@NotNull@PathParam("userId")String userId
 	) {
     	try {
     	
     		if (!commentId.isEmpty()){
     			
-        	Document response = getCommentService().deleteComment(commentId);
+        	Document response = getCommentService().deleteComment(commentId, userId);
         		
         	System.out.println("Post Deletion Response : " + response.toJson());
         		

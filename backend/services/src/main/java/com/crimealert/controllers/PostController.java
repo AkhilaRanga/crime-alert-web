@@ -326,10 +326,10 @@ public class PostController {
 	
 	@DELETE
     @Produces(MediaType.TEXT_PLAIN)
-	@Path("/{postId}")
-	public Response deletePost(@PathParam("postId") String postId) {
+	@Path("/{postId}/{userId}")
+	public Response deletePost(@PathParam("postId") String postId, @PathParam("userId") String userId) {
     	try {
-    		String response = getPostService().deletePost(postId);
+    		String response = getPostService().deletePost(postId, userId);
     		System.out.println("Post Deletion Response : " + response);
     		return Response.ok(response).build();
     	} catch (ClientSideException ex) {

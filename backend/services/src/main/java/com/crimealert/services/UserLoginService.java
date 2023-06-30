@@ -108,6 +108,19 @@ public class UserLoginService {
 	    return "Session deleted successfully for:" + userId;
 	}
 	
+	public Document searchSession(String userId)
+	{
+		MongoClient mongoClient = getDBConnectionService().getDBConnection();
+        MongoCollection<Document> sessionsCollection = mongoClient
+				.getDatabase(SessionConstant.DB)
+				.getCollection(SessionConstant.COLLECTION);
+        
+		Document sessionDocument = sessionsCollection.find(eq(SessionConstant.USER_ID, userId)).first();
+		
+		getDBConnectionService().closeDBConnection();
+		
+		return sessionDocument;
+	}
 	public PasswordUtils getPasswordUtil()
     {
 		if(passwordUtil == null)
