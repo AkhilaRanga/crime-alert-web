@@ -15,24 +15,15 @@ import {
 
 export const profileTestId = "profile-test-id";
 
-interface ProfileProps {
-  fullName: string;
-  email: string;
-  location: string;
-  phoneNumber: string;
-  password: string;
-  enableNotifications: boolean;
-}
+function Profile() {
+  // @TODO Fetch User data
+  const fullName = "John Doe";
+  const email = "john.doe@gmail.com";
+  const location = "RIC";
+  const phoneNumber = "999-999-9999";
+  const password = "mock-pwd";
+  const enableNotifications = true;
 
-function Profile(props: ProfileProps) {
-  const {
-    fullName,
-    email,
-    location,
-    phoneNumber,
-    enableNotifications,
-    password,
-  } = props;
   const [passwordError, setpasswordError] = useState<string | null>(null);
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
 
