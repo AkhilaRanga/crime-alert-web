@@ -1,18 +1,22 @@
 package com.crimealert.services;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import static com.mongodb.client.model.Filters.eq;
 import com.crimealert.models.EncodedPassword;
+import com.crimealert.models.Otp;
 import com.crimealert.models.User;
 import com.crimealert.Exceptions.ClientSideException;
 import com.crimealert.Validations.UserValidation;
+import com.crimealert.constants.AuthenticationConstant;
 import com.crimealert.constants.UserConstant;
 import com.crimealert.utils.PasswordUtils;
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
@@ -58,14 +62,12 @@ public class UserService {
 	{
 		try
 		{
-			Document userLoggedIn = getUserLoginService().searchSession(user.getEmail());
-			
-			if(userLoggedIn == null)
-				throw new ClientSideException("User is not logged In");
 				
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 			
-			Document searchedDoc = userValidation.emailExists(user.getEmail(), getDBSearchService(), mongoClient, true);
+			Document searchedDoc = getUserValidation().emailExists(user.getEmail(), getDBSearchService(), mongoClient, true);
+			
+			System.out.println("Searched Document:"+ searchedDoc);
 			
 	        
 			MongoCollection<Document> collection = mongoClient
@@ -99,7 +101,7 @@ public class UserService {
 			
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 					
-			userValidation.emailExists(email, getDBSearchService(), mongoClient, true);
+			getUserValidation().emailExists(email, getDBSearchService(), mongoClient, true);
 			
 			MongoCollection<Document> collection = mongoClient
 													.getDatabase(UserConstant.DB)
@@ -122,6 +124,75 @@ public class UserService {
         }
 	      
 	     return "Deleted Document Successfully"; 
+		
+	}
+	
+	public Document insertOtp(Otp otp)
+	{
+		Document document = new Document();
+		try {
+
+        	MongoClient mongoClient = getDBConnectionService().getDBConnection();
+            
+            MongoDatabase database = mongoClient.getDatabase(UserConstant.DB);
+            
+        	//Preparing a document
+            
+            document.append(UserConstant.EMAIL, otp.getEmail());
+            document.append(AuthenticationConstant.TOKEN, otp.getOneTimeToken());
+            
+            //Inserting the document into the collection
+            database.getCollection(AuthenticationConstant.OTP_COLLECTION).insertOne(document);
+            
+            getDBConnectionService().closeDBConnection();
+            
+            System.out.println("Document inserted successfully");
+        } catch (MongoException me) {
+            System.err.println("An error occurred while attempting to run a command: " + me);
+            throw me;
+        }
+        catch (ClientSideException ce) {
+            System.err.println("An error occurred while attempting to run a command: " + ce);
+            throw ce;
+        }
+		
+		return document;
+		
+	}
+	
+	public long deleteOtp(Otp otp)
+	{
+		try {
+
+        	MongoClient mongoClient = getDBConnectionService().getDBConnection();
+            
+            MongoDatabase database = mongoClient.getDatabase(UserConstant.DB);
+            
+            //Inserting the document into the collection
+            Bson filter = Filters.and(Filters.eq(UserConstant.EMAIL, otp.getEmail()), Filters.eq(AuthenticationConstant.TOKEN, otp.getOneTimeToken()));
+            DeleteResult dbResponse = database.getCollection(AuthenticationConstant.OTP_COLLECTION).deleteOne(filter);
+            
+            getDBConnectionService().closeDBConnection();
+            
+            System.out.println("Document deleted successfully");
+            
+            return dbResponse.getDeletedCount();
+        } catch (MongoException me) {
+            System.err.println("An error occurred while attempting to run a command: " + me);
+            throw me;
+        }
+        catch (ClientSideException ce) {
+            System.err.println("An error occurred while attempting to run a command: " + ce);
+            throw ce;
+        }
+
+	}
+	
+	public Document searchOtp(Otp otp)
+	{
+		MongoClient mongoClient = getDBConnectionService().getDBConnection();
+		
+		return getDBSearchService().searchOtp(otp.getEmail(), otp.getOneTimeToken(), mongoClient);
 		
 	}
 	
@@ -167,20 +238,29 @@ public class UserService {
         Document setData = new Document();
 
         //update profile
-		if(!user.getFullName().equals(searchedUser.get("fullName")))
-			setData.append("FullName", user.getFullName());
-			
-		if(!user.getPhoneNumber().equals(searchedUser.get("phoneNumber")))
-			setData.append("PhoneNumber", user.getPhoneNumber());
-				
-		if(!user.getPassword().equals(searchedUser.get("password")))
-			//need to write logic to update
+		if(user.getFullName() != null && (!user.getFullName().equals(searchedUser.get("fullName"))))
+			setData.append("fullName", searchedUser.get("fullName"));
 		
-		if(!user.getEnableNotifications().equals(searchedUser.get("enableNotifications")))
-			setData.append("EnableNotifications", user.getEnableNotifications());
+		System.out.println("Searched Full name:" +  searchedUser.get("fullName"));
+			
+		if( user.getPhoneNumber() != null && !user.getPhoneNumber().equals(searchedUser.get("phoneNumber")))
+			setData.append("phoneNumber", user.getPhoneNumber());
+				
+		if( user.getPassword() != null && !getPasswordUtil().verifyUserPassword(user.getPassword(),searchedUser.get("password").toString(),searchedUser.get("salt").toString()))
+		{
+			EncodedPassword encoded = getPasswordUtil().generateUserPassword(user.getPassword());
+			setData.append("password", encoded.getEncodedPassword());
+			setData.append("salt", encoded.getSalt());
+		}
+			//need to write logic to update
+		if( user.getEnableNotifications() != null && !user.getEnableNotifications().equals(searchedUser.get("enableNotifications")))
+			setData.append("enableNotifications", user.getEnableNotifications());
+		
+		if( user.getVerification() != null && !user.getVerification().equals(searchedUser.get("verification")))
+			setData.append("verification", user.getVerification());
 						
-		if(!user.getLocation().equals(searchedUser.get("location")))
-			setData.append("Location", user.getLocation());
+		if(user.getLocation() != null && !user.getLocation().equals(searchedUser.get("location")))
+			setData.append("location", user.getLocation());
 		
 		if(!setData.isEmpty())
 		{
@@ -206,7 +286,8 @@ public class UserService {
         EncodedPassword encoded = getPasswordUtil().generateUserPassword(user.getPassword());
         document.append(UserConstant.PASSWORD, encoded.getEncodedPassword());
         document.append(UserConstant.SALT, encoded.getSalt());
-        document.append(UserConstant.ENABLE_NOTIFICATIONS, user.getEnableNotifications());	
+        document.append(UserConstant.ENABLE_NOTIFICATIONS, false);	
+        document.append(UserConstant.VERIFICATION, false);	
         
         return document;
 	}

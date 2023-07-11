@@ -115,6 +115,11 @@ public class UserController {
     public Response userProfileUpdate(User user) 
     {
     	try {
+    		
+    		Document userLoggedIn = getUserLoginService().searchSession(user.getEmail());
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
     	
     	String response = getUserService().updateUserProfile(user);
     	

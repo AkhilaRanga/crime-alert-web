@@ -11,5 +11,6 @@ public class UserConstant {
 	public static final String DB = "crimeAlertDB";
 	public static final String COLLECTION = "users";
 	public static final String PHONE_NUMBER = "phoneNumber";
+	public static final String VERIFICATION = "verification";
 	
 }

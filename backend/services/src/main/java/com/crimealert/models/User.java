@@ -29,6 +29,8 @@ public class User {
 	
 	private Boolean enableNotifications;
 	
+	private Boolean verification;
+	
 	
 	public String getFullName()
 	{
@@ -88,6 +90,16 @@ public class User {
 	public void setEnableNotifications(Boolean enableNotifications)
 	{
 		this.enableNotifications = enableNotifications;
+	}
+	
+	public Boolean getVerification()
+	{
+		return verification;
+	}
+	
+	public void setVerififcation(Boolean verification)
+	{
+		this.verification = verification;
 	}	
 
 }
