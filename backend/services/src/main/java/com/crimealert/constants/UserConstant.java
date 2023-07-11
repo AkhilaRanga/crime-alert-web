@@ -10,8 +10,6 @@ public class UserConstant {
 	public static final String ENABLE_NOTIFICATIONS = "enableNotifications";
 	public static final String DB = "crimeAlertDB";
 	public static final String COLLECTION = "users";
-	public static final String TOKEN = "token";
-	public static final String OTP_COLLECTION = "oneTimeAuthentication";
 	public static final String PHONE_NUMBER = "phoneNumber";
 	public static final String VERIFICATION = "verification";
 	

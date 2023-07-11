@@ -5,6 +5,7 @@ import static com.mongodb.client.model.Filters.eq;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import com.crimealert.constants.AuthenticationConstant;
 import com.crimealert.constants.UserConstant;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -41,8 +42,8 @@ public class DBSearchService {
 		try {
 			MongoDatabase database = mongoClient.getDatabase(UserConstant.DB);
 			//Query OTP from the collection
-			Bson filter = Filters.and(Filters.eq(UserConstant.EMAIL, email), Filters.eq(UserConstant.TOKEN, token));
-            Document otpDocument = database.getCollection(UserConstant.OTP_COLLECTION).
+			Bson filter = Filters.and(Filters.eq(UserConstant.EMAIL, email), Filters.eq(AuthenticationConstant.TOKEN, token));
+            Document otpDocument = database.getCollection(AuthenticationConstant.OTP_COLLECTION).
             			find(filter).first();
             return otpDocument;
 		} catch(Exception ex) {

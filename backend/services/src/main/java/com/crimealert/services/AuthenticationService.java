@@ -29,7 +29,7 @@ public class AuthenticationService {
 		
         	String token = SessionTokenUtils.generateToken(emailId);
 		
-        	String provider = getProvider(emailId);
+        	String provider = getProvider("webalertproject@gmail.com");
 		
         	if(EmailSender.sendOTP(emailId, token, provider))
         	{

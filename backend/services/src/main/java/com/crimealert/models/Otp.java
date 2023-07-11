@@ -4,8 +4,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 public class Otp {
-	@NotNull(message = "Token cannot be null")
-	@NotEmpty(message = "Token cannot be empty")
+	@NotNull(message = "Email cannot be null")
+	@NotEmpty(message = "Email cannot be empty")
     private String email;
 	
 	@NotNull(message = "Token cannot be null")

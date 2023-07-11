@@ -9,6 +9,7 @@ import com.crimealert.models.Otp;
 import com.crimealert.models.User;
 import com.crimealert.Exceptions.ClientSideException;
 import com.crimealert.Validations.UserValidation;
+import com.crimealert.constants.AuthenticationConstant;
 import com.crimealert.constants.UserConstant;
 import com.crimealert.utils.PasswordUtils;
 import com.mongodb.MongoException;
@@ -138,10 +139,10 @@ public class UserService {
         	//Preparing a document
             
             document.append(UserConstant.EMAIL, otp.getEmail());
-            document.append(UserConstant.TOKEN, otp.getOneTimeToken());
+            document.append(AuthenticationConstant.TOKEN, otp.getOneTimeToken());
             
             //Inserting the document into the collection
-            database.getCollection(UserConstant.OTP_COLLECTION).insertOne(document);
+            database.getCollection(AuthenticationConstant.OTP_COLLECTION).insertOne(document);
             
             getDBConnectionService().closeDBConnection();
             
@@ -168,8 +169,8 @@ public class UserService {
             MongoDatabase database = mongoClient.getDatabase(UserConstant.DB);
             
             //Inserting the document into the collection
-            Bson filter = Filters.and(Filters.eq(UserConstant.EMAIL, otp.getEmail()), Filters.eq(UserConstant.TOKEN, otp.getOneTimeToken()));
-            DeleteResult dbResponse = database.getCollection(UserConstant.OTP_COLLECTION).deleteOne(filter);
+            Bson filter = Filters.and(Filters.eq(UserConstant.EMAIL, otp.getEmail()), Filters.eq(AuthenticationConstant.TOKEN, otp.getOneTimeToken()));
+            DeleteResult dbResponse = database.getCollection(AuthenticationConstant.OTP_COLLECTION).deleteOne(filter);
             
             getDBConnectionService().closeDBConnection();
             
