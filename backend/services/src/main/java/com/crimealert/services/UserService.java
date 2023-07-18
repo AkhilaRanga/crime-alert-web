@@ -2,6 +2,7 @@ package com.crimealert.services;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
 import static com.mongodb.client.model.Filters.eq;
 import com.crimealert.models.EncodedPassword;
@@ -17,6 +18,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
@@ -56,6 +58,32 @@ public class UserService {
             throw ce;
         }
         return "Registered Successfully for " + user.getFullName();
+	}
+	
+	public Document getUserProfile(String email)
+	{
+		try
+		{
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+			MongoCollection<Document> userCollection = mongoClient
+	        		.getDatabase(UserConstant.DB)
+	        		.getCollection(UserConstant.COLLECTION);
+			
+			Bson projectionFields = Projections.fields(
+                    Projections.exclude(UserConstant.PASSWORD, UserConstant.SALT));
+            Document userDocument = userCollection.
+            			find(eq(UserConstant.EMAIL, email)).projection(projectionFields).first();
+            
+			System.out.println("Searched Document:"+ userDocument);
+            return userDocument;
+		}catch (MongoException me) {
+            System.err.println("An error occurred while attempting to run a command: " + me);
+            throw me;
+        }
+		catch (ClientSideException ce) {
+            System.err.println("Validation Error : " + ce);
+            throw ce;
+        }
 	}
 	
 	public String updateUserProfile(User user)

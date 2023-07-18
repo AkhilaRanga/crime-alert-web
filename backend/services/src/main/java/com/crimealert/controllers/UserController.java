@@ -4,11 +4,13 @@ import jakarta.inject.Singleton;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -103,6 +105,25 @@ public class UserController {
     		System.out.println("Validation Error:" + ex);
     		return Response.status(400).entity(ex.getMessage()).build();
     	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+    }
+    
+    @GET
+    @Path("getProfile")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response userProfileFetch(@QueryParam("email")String email) 
+    {
+    	try {
+	    	Document response = getUserService().getUserProfile(email);
+	    	return Response.ok(response.toJson()).build();
+    	} 
+    	catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	}
+    	catch (Exception ex) {
     		System.out.println("Response failed:" + ex);
     		return Response.status(500).entity(ex.getMessage()).build();
     	}
