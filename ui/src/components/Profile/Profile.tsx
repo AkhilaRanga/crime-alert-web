@@ -6,37 +6,70 @@ import {
   FormControlLabel,
   Checkbox,
   Button,
+  Snackbar,
 } from "@material-ui/core";
 import "./Profile.css";
 import {
   isValidPassword,
   isValidPhoneNumber,
 } from "../../utils/validationUtils";
+import { UserContext } from "../../contexts/UserContext";
+import { UserModel } from "../../models/userModel";
 
 export const profileTestId = "profile-test-id";
 
-function Profile() {
-  // @TODO Fetch User data
-  const fullName = "John Doe";
-  const email = "john.doe@gmail.com";
-  const location = "RIC";
-  const phoneNumber = "999-999-9999";
-  const password = "mock-pwd";
-  const enableNotifications = true;
+function ProfileWrapper() {
+  const { userProps } = React.useContext(UserContext);
+  const userEmail = userProps.email;
+  const [userProfile, setUserProfile] = React.useState<UserModel>();
 
+  const passwordPlaceholder = "***";
+
+  React.useEffect(() => {
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    fetch(`/services/api/users/getProfile?email=${userEmail}`, requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        setUserProfile(data);
+        console.log(data);
+      })
+      .catch((err) => console.error(err));
+  }, [userEmail]);
+
+  const defaultValues = React.useMemo(
+    () => ({
+      "full-name": userProfile?.fullName,
+      email: userProfile?.email,
+      location: userProfile?.location,
+      "phone-number": userProfile?.phoneNumber,
+      password: passwordPlaceholder,
+      "confirm-password": "",
+      "enable-notifications": userProfile?.enableNotifications,
+    }),
+    [userProfile]
+  );
+
+  return (
+    <Profile defaultValues={defaultValues} key={defaultValues["full-name"]} />
+  );
+}
+
+interface ProfileProps {
+  defaultValues: any;
+}
+
+function Profile(props: ProfileProps) {
+  const { defaultValues } = props;
   const [passwordError, setpasswordError] = useState<string | null>(null);
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
+  const [formValues, setFormValues] = React.useState(defaultValues);
 
-  const defaultValues = {
-    "full-name": fullName,
-    email: email,
-    location: location,
-    "phone-number": phoneNumber,
-    password: password,
-    "confirm-password": password,
-    "enable-notifications": enableNotifications,
-  };
-  const [formValues, setFormValues] = useState(defaultValues);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
 
   const handleInputChange = (event: any) => {
     const { id, value } = event.target;
@@ -97,9 +130,8 @@ function Profile() {
     // TODO
     // Validate phone number and password if required
     // Should location be searchable
-    // send data to api
     const requestOptions = {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         fullName: formValues["full-name"],
@@ -111,9 +143,12 @@ function Profile() {
       }),
     };
 
-    // fetch("/services/api/users/register", requestOptions)
-    //   .then((response) => response.json())
-    //   .then((data) => console.log(data));
+    fetch("/services/api/users/updateProfile", requestOptions)
+      .then((response) => response.text())
+      .then((data) => {
+        setOpenSnackbar(true);
+        setUpdateMessage(data);
+      });
   };
 
   const paperStyle = {
@@ -212,10 +247,16 @@ function Profile() {
           <Button variant="contained" color="primary" type="submit" fullWidth>
             Update
           </Button>
+          <Snackbar
+            open={openSnackbar}
+            autoHideDuration={6000}
+            message={updateMessage}
+            onClose={() => setOpenSnackbar(false)}
+          />
         </form>
       </Paper>
     </Grid>
   );
 }
 
-export default Profile;
+export default ProfileWrapper;
