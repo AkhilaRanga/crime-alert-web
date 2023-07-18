@@ -14,6 +14,7 @@ import Snackbar from "@material-ui/core/Snackbar";
 import Registration from "../Registration/Registration";
 import "./Login.css";
 import { isValidEmail, isValidPassword } from "../../utils/validationUtils";
+import { UserContext } from "../../contexts/UserContext";
 
 export const loginTestId = "login-test-id";
 
@@ -31,6 +32,8 @@ function Login() {
 
   const [openSignUp, setOpenSignUp] = React.useState(false);
   const handleSignUpOpen = () => setOpenSignUp(true);
+
+  const { userProps, setUserProps } = React.useContext(UserContext);
 
   const handleEmailChange = (event: any) => {
     if (!isValidEmail(event.target.value)) {
@@ -74,12 +77,15 @@ function Login() {
     fetch("/services/api/users/login", requestOptions)
       .then((response) => response.text())
       .then((data) => {
-        console.log(data);
+        const validateResponse = data.split("Verification:");
         setOpenSnackbar(true);
-        setsuccessMessage(data);
+        setsuccessMessage(validateResponse[0]);
+        setUserProps({
+          email: formValues["email"],
+          isLoggedIn: validateResponse[0] === "User login successful.",
+          isVerified: validateResponse[1] === "true",
+        });
       });
-
-    //Need to display response message
   };
 
   const paperStyle = {
