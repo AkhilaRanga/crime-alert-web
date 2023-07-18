@@ -40,7 +40,8 @@ public class UserLoginService {
             if (isValidPassword) {
             	setUserSessionToken(userDocument.get(UserConstant._ID).toString());
                 System.out.println("User validated");
-                return "User login successful";
+                Boolean verification = userDocument.getBoolean(UserConstant.VERIFICATION);
+                return "User login successful.Verification:" + verification;
             }
             else {
                 System.out.println("User email or password invalid");
