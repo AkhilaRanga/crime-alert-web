@@ -6,6 +6,7 @@ export interface UserProps {
   location?: string;
   isVerified?: boolean;
   isLoggedIn?: boolean;
+  isForgotPassword?: boolean;
 }
 
 export interface UserContextProps {
@@ -19,6 +20,7 @@ const defaultUserProps: UserProps = {
   location: "",
   isVerified: false,
   isLoggedIn: false,
+  isForgotPassword: false,
 };
 
 export const UserContext = React.createContext<UserContextProps>({

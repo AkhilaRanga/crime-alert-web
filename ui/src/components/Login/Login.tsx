@@ -15,6 +15,8 @@ import Registration from "../Registration/Registration";
 import "./Login.css";
 import { isValidEmail, isValidPassword } from "../../utils/validationUtils";
 import { UserContext } from "../../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
+import { RouterPath } from "../../constants/routerConstants";
 
 export const loginTestId = "login-test-id";
 
@@ -35,6 +37,8 @@ function Login() {
 
   const { userProps, setUserProps } = React.useContext(UserContext);
 
+  const navigate = useNavigate();
+
   const handleEmailChange = (event: any) => {
     if (!isValidEmail(event.target.value)) {
       setEmailError("Email is invalid");
@@ -46,6 +50,11 @@ function Login() {
       ...formValues,
       [id]: value,
     });
+  };
+
+  const handleForgotPassword = (event: any) => {
+    setUserProps({ ...userProps, isForgotPassword: true });
+    navigate(RouterPath.REQUEST_OTP);
   };
 
   const handlePasswordChange = (event: any) => {
@@ -149,7 +158,7 @@ function Login() {
           />
 
           <Typography>
-            <Link href="#">Forgot password</Link>
+            <Link onClick={handleForgotPassword}>Forgot password</Link>
           </Typography>
 
           <Divider className="divider" />
