@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Grid, Paper, TextField, Button, Snackbar } from "@material-ui/core";
 import { UserContext } from "../../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
+import { RouterPath } from "../../constants/routerConstants";
 
 export const otpVerifyTestId = "otp-verify-test-id";
 
@@ -13,6 +15,8 @@ function OTPVerify() {
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const { userProps, setUserProps } = React.useContext(UserContext);
+
+  const navigate = useNavigate();
 
   const handleOtpChange = (event: any) => {
     const { id, value } = event.target;
@@ -39,6 +43,12 @@ function OTPVerify() {
         setOpenSnackbar(true);
         setsuccessMessage(data);
         setUserProps({ ...userProps, isVerified: true });
+
+        navigate(
+          userProps.isForgotPassword
+            ? RouterPath.RESET_PASSWORD
+            : RouterPath.HOME
+        );
       });
 
     //Need to display response message
