@@ -1,57 +1,48 @@
 import React, { useState } from "react";
 import { Grid, Paper, TextField, Button, Snackbar } from "@material-ui/core";
-import { isValidPassword } from "../../utils/validationUtils";
+import { UserContext } from "../../contexts/UserContext";
 
-export const resetTestId = "reset-test-id";
+export const otpVerifyTestId = "otp-verify-test-id";
 
 const initialState = {
-  newPassword: "",
-  confirmPassword: "",
+  otp: "",
 };
 
-function PasswordReset() {
+function OTPVerify() {
   const [formValues, setFormValues] = useState(initialState);
-  const [passwordError, setpasswordError] = useState<string | null>(null);
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+  const { userProps, setUserProps } = React.useContext(UserContext);
 
-  const handlePasswordChange = (event: any) => {
-    if (!isValidPassword(event.target.value)) {
-      setpasswordError(
-        "Password must contain - 8 characters, one uppercase, one lowercase, one digit, one special character"
-      );
-    } else {
-      setpasswordError(null);
-    }
+  const handleOtpChange = (event: any) => {
     const { id, value } = event.target;
     setFormValues({
       ...formValues,
       [id]: value,
     });
   };
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const requestOptions = {
-      method: "PUT",
+      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        newPassword: formValues["newPassword"],
-        confirmPassword: formValues["confirmPassword"],
+        oneTimeToken: formValues["otp"],
+        email: userProps["email"],
       }),
     };
 
-    fetch("/services/api/users/updateProfile", requestOptions)
+    fetch("/services/api/auth/verifyOtp", requestOptions)
       .then((response) => response.text())
       .then((data) => {
         console.log(data);
         setOpenSnackbar(true);
         setsuccessMessage(data);
+        setUserProps({ ...userProps, isVerified: true });
       });
 
     //Need to display response message
   };
-
   const paperStyle = {
     padding: 20,
     height: 250,
@@ -59,7 +50,7 @@ function PasswordReset() {
     margin: "20px auto",
   };
   return (
-    <Grid data-testid={resetTestId}>
+    <Grid data-testid={otpVerifyTestId}>
       <Paper elevation={10} style={paperStyle}>
         <form onSubmit={handleSubmit}>
           <Grid
@@ -69,39 +60,21 @@ function PasswordReset() {
             alignItems="center"
             spacing={4}
           >
-            <h2>Forgot Password</h2>
+            <h2>Email Verification</h2>
 
             <TextField
               style={{ paddingBottom: "15px" }}
-              label="NewPassword"
-              id="newPassword"
-              placeholder="New Password"
-              onChange={handlePasswordChange}
-              type="password"
+              label="One Time Password"
+              id="otp"
+              placeholder="Enter One Time Password"
+              onChange={handleOtpChange}
               fullWidth
               required
               variant="filled"
-              error={passwordError !== null}
-              helperText={(passwordError && passwordError) || ""}
             />
-            <TextField
-              style={{ paddingBottom: "15px" }}
-              label="ConfirmPassword"
-              id="confirmPassword"
-              placeholder="Confirm Password"
-              onChange={handlePasswordChange}
-              type="password"
-              fullWidth
-              required
-              variant="filled"
-              error={passwordError !== null}
-              helperText={(passwordError && passwordError) || ""}
-            />
-
             <Button type="submit" color="primary" variant="contained" fullWidth>
-              Reset Password
+              Verify OTP
             </Button>
-
             <Snackbar
               open={openSnackbar}
               autoHideDuration={6000}
@@ -115,4 +88,4 @@ function PasswordReset() {
   );
 }
 
-export default PasswordReset;
+export default OTPVerify;
