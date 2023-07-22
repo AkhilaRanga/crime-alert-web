@@ -152,9 +152,9 @@ public class PostController {
 	
 	@GET
     @Produces(MediaType.APPLICATION_JSON)
-	public Response listPosts(@QueryParam("location") String location) {
+	public Response listPosts(@QueryParam("location") String location, @QueryParam("userId") String userId) {
     	try {
-    		List<Document> response = postService.listPosts(location);
+    		List<Document> response = getPostService().listPosts(location, userId);
     		return Response.ok(response).build();
     	} catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);

@@ -41,7 +41,9 @@ public class UserLoginService {
             	setUserSessionToken(userDocument.get(UserConstant._ID).toString());
                 System.out.println("User validated");
                 Boolean verification = userDocument.getBoolean(UserConstant.VERIFICATION);
-                return "User login successful.Verification:" + verification;
+                String location = userDocument.getString(UserConstant.LOCATION);
+                String userId = userDocument.getObjectId(UserConstant._ID).toString();
+                return "User login successful," + userId + "," + verification + "," + location;
             }
             else {
                 System.out.println("User email or password invalid");

@@ -1,6 +1,7 @@
 package com.crimealert.services;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Sorts.descending;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -245,7 +246,7 @@ public class PostService {
 	
 	
 	
-	public List<Document> listPosts(String location) {
+	public List<Document> listPosts(String location, String userId) {
 		
 		List<Document> posts = new ArrayList<>();
 		
@@ -257,9 +258,9 @@ public class PostService {
             
             MongoCollection<Document> collection = database.getCollection(PostConstant.COLLECTION);
 
-            Bson filter = Filters.eq("location", location);
+            Bson filter = (location != null) ? Filters.eq("location", location) : Filters.eq("userId", userId);
             
-            FindIterable<Document> documents =  collection.find(filter);
+            FindIterable<Document> documents =  collection.find(filter).sort(descending(PostConstant.TIME_CREATED));
             
             Iterator it = documents.iterator();
             
