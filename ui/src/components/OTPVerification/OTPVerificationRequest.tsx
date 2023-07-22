@@ -1,27 +1,29 @@
 import React, { useState } from "react";
 import { Grid, Paper, TextField, Button, Snackbar } from "@material-ui/core";
-import { isValidPassword } from "../../utils/validationUtils";
+import { isValidEmail } from "../../utils/validationUtils";
+import { UserContext } from "../../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
+import { RouterPath } from "../../constants/routerConstants";
 
-export const resetTestId = "reset-test-id";
+export const otpVerificationRequestTestId = "otp-verification-request-test-id";
 
 const initialState = {
-  newPassword: "",
-  confirmPassword: "",
+  email: "",
 };
 
-function PasswordReset() {
+function OTPVerificationRequest() {
   const [formValues, setFormValues] = useState(initialState);
-  const [passwordError, setpasswordError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+  const { userProps, setUserProps } = React.useContext(UserContext);
+  const navigate = useNavigate();
 
-  const handlePasswordChange = (event: any) => {
-    if (!isValidPassword(event.target.value)) {
-      setpasswordError(
-        "Password must contain - 8 characters, one uppercase, one lowercase, one digit, one special character"
-      );
+  const handleEmailChange = (event: any) => {
+    if (!isValidEmail(event.target.value)) {
+      setEmailError("Email is invalid");
     } else {
-      setpasswordError(null);
+      setEmailError(null);
     }
     const { id, value } = event.target;
     setFormValues({
@@ -29,29 +31,30 @@ function PasswordReset() {
       [id]: value,
     });
   };
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const requestOptions = {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        newPassword: formValues["newPassword"],
-        confirmPassword: formValues["confirmPassword"],
-      }),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
     };
 
-    fetch("/services/api/users/updateProfile", requestOptions)
+    fetch(
+      `/services/api/auth/requestOtp/${formValues["email"]}`,
+      requestOptions
+    )
       .then((response) => response.text())
       .then((data) => {
         console.log(data);
         setOpenSnackbar(true);
         setsuccessMessage(data);
+        setUserProps({ ...userProps, email: formValues["email"] });
+        navigate(RouterPath.VERIFY);
       });
 
     //Need to display response message
   };
-
   const paperStyle = {
     padding: 20,
     height: 250,
@@ -59,7 +62,7 @@ function PasswordReset() {
     margin: "20px auto",
   };
   return (
-    <Grid data-testid={resetTestId}>
+    <Grid data-testid={otpVerificationRequestTestId}>
       <Paper elevation={10} style={paperStyle}>
         <form onSubmit={handleSubmit}>
           <Grid
@@ -69,39 +72,23 @@ function PasswordReset() {
             alignItems="center"
             spacing={4}
           >
-            <h2>Forgot Password</h2>
+            <h2>Email Verification</h2>
 
             <TextField
               style={{ paddingBottom: "15px" }}
-              label="NewPassword"
-              id="newPassword"
-              placeholder="New Password"
-              onChange={handlePasswordChange}
-              type="password"
+              label="Email id"
+              id="email"
+              placeholder="Enter email id"
+              onChange={handleEmailChange}
               fullWidth
               required
               variant="filled"
-              error={passwordError !== null}
-              helperText={(passwordError && passwordError) || ""}
+              error={emailError !== null}
+              helperText={(emailError && emailError) || ""}
             />
-            <TextField
-              style={{ paddingBottom: "15px" }}
-              label="ConfirmPassword"
-              id="confirmPassword"
-              placeholder="Confirm Password"
-              onChange={handlePasswordChange}
-              type="password"
-              fullWidth
-              required
-              variant="filled"
-              error={passwordError !== null}
-              helperText={(passwordError && passwordError) || ""}
-            />
-
             <Button type="submit" color="primary" variant="contained" fullWidth>
-              Reset Password
+              Send Verification Code
             </Button>
-
             <Snackbar
               open={openSnackbar}
               autoHideDuration={6000}
@@ -115,4 +102,4 @@ function PasswordReset() {
   );
 }
 
-export default PasswordReset;
+export default OTPVerificationRequest;
