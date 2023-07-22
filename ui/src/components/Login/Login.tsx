@@ -77,13 +77,15 @@ function Login() {
     fetch("/services/api/users/login", requestOptions)
       .then((response) => response.text())
       .then((data) => {
-        const validateResponse = data.split("Verification:");
+        const validateResponse = data.split(",");
         setOpenSnackbar(true);
         setsuccessMessage(validateResponse[0]);
         setUserProps({
           email: formValues["email"],
-          isLoggedIn: validateResponse[0] === "User login successful.",
-          isVerified: validateResponse[1] === "true",
+          isLoggedIn: validateResponse[0] === "User login successful",
+          userId: validateResponse[1],
+          isVerified: validateResponse[2] === "true",
+          location: validateResponse[3],
         });
       });
   };

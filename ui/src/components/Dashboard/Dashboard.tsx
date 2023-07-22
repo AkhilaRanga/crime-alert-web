@@ -1,23 +1,22 @@
 import React from "react";
-import { Button } from "@material-ui/core";
-import { useNavigate } from "react-router-dom";
-import { RouterPath } from "../../constants/routerConstants";
+import SideNav, { navItems } from "../dashboardComponents/SideNav";
+import "./Dashboard.css";
+import Profile from "../Profile/Profile";
+import Feed from "../dashboardComponents/Feed";
+import Activity from "../dashboardComponents/Activity";
 
 export const dashboardTestId = "dashboard-test-id";
 
 function Dashboard() {
-  const navigate = useNavigate();
+  const [activeNav, setActiveNav] = React.useState(navItems.FEED);
+
   return (
-    <div data-testid={dashboardTestId}>
-      <div>User Dashboard placeholder</div>
-      <Button
-        variant="contained"
-        color="primary"
-        type="button"
-        onClick={() => navigate(RouterPath.UPDATE_PROFILE)}
-      >
-        Update Profile
-      </Button>
+    <div className="wrapper" data-testid={dashboardTestId}>
+      <SideNav setActiveNav={setActiveNav} />
+      {activeNav === navItems.FEED && <Feed />}
+      {activeNav === navItems.ACIVITY && <Activity />}
+      {activeNav === navItems.PROFILE && <Profile />}
+      {activeNav === navItems.LOGOUT && <>Logout Placeholder</>}
     </div>
   );
 }

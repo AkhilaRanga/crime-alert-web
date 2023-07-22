@@ -26,7 +26,7 @@ public class Post {
 	private String location;
 
 	private crimeLevel crimeType;
-	private boolean isFlagged;
+	private boolean isFlagged; // should this be count?
 	private int likesCount;
 	private Date timeCreated;
 	private Date timeUpdated;

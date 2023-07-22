@@ -5,22 +5,37 @@ import Content from "./components/Content/Content";
 import Footer from "./components/Footer/Footer";
 import { BrowserRouter } from "react-router-dom";
 import { UserContext, UserProps } from "./contexts/UserContext";
+import { createTheme, ThemeProvider } from "@material-ui/core/styles";
+import { grey, teal } from "@material-ui/core/colors";
 
 export const appTestId = "app-test-id";
 
 function App() {
   const [userProps, setUserProps] = React.useState<UserProps>({});
   const value = { userProps, setUserProps };
+  // theme
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: teal[400],
+      },
+      secondary: {
+        main: grey[400],
+      },
+    },
+  });
 
   return (
     <div className="App" data-testid={appTestId}>
-      <UserContext.Provider value={value}>
-        <Header />
-        <BrowserRouter>
-          <Content />
-        </BrowserRouter>
-        <Footer />
-      </UserContext.Provider>
+      <ThemeProvider theme={theme}>
+        <UserContext.Provider value={value}>
+          <Header />
+          <BrowserRouter>
+            <Content />
+          </BrowserRouter>
+          <Footer />
+        </UserContext.Provider>
+      </ThemeProvider>
     </div>
   );
 }

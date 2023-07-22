@@ -2,6 +2,8 @@ import React from "react";
 
 export interface UserProps {
   email?: string;
+  userId?: string;
+  location?: string;
   isVerified?: boolean;
   isLoggedIn?: boolean;
 }
@@ -13,6 +15,8 @@ export interface UserContextProps {
 
 const defaultUserProps: UserProps = {
   email: "",
+  userId: "",
+  location: "",
   isVerified: false,
   isLoggedIn: false,
 };
