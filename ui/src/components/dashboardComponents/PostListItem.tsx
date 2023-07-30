@@ -8,13 +8,15 @@ import {
   CardHeader,
   IconButton,
   CardActions,
+  MenuItem,
+  Menu,
 } from "@material-ui/core";
-import { PostModel } from "../../models/postModel";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import FavoriteBorderIcon from "@material-ui/icons/FavoriteBorder";
 import FlagIcon from "@material-ui/icons/Flag";
 import FlagOutlinedIcon from "@material-ui/icons/FlagOutlined";
 import CommentIcon from "@material-ui/icons/Comment";
+import CrudModal from "./CrudModal";
 
 export const postListItemTestId = "post-list-item-test-id";
 
@@ -24,14 +26,17 @@ const useStyles = makeStyles({
   },
 });
 
-function PostListItem(props: PostModel) {
+function PostListItem(props: any) {
   const {
+    postId,
+    userId,
     title,
     description,
     timeCreated,
     likesCount,
     isFlagged,
     crimeType,
+    isActivity,
   } = props;
   const classes = useStyles();
   const options: Intl.DateTimeFormatOptions = {
@@ -42,6 +47,18 @@ function PostListItem(props: PostModel) {
   };
   const today = new Date();
   const createdDateTime = today.toLocaleDateString("en-US", options);
+  const [open, setOpen] = React.useState(false);
+  const [showModal, setShowModal] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  function handleOpenMenu(event: React.MouseEvent<HTMLButtonElement>) {
+    setAnchorEl(event.currentTarget);
+    setOpen(true);
+  }
+  function handleCloseMenu(event: any) {
+    setAnchorEl(null);
+    setOpen(false);
+  }
 
   return (
     <div data-testid={postListItemTestId}>
@@ -49,14 +66,31 @@ function PostListItem(props: PostModel) {
         <Card className={classes.root}>
           <CardHeader
             action={
-              <IconButton aria-label="settings">
-                <MoreVertIcon />
-              </IconButton>
+              isActivity ? (
+                <IconButton aria-label="settings" onClick={handleOpenMenu}>
+                  <MoreVertIcon />
+                </IconButton>
+              ) : (
+                <></>
+              )
             }
             title={title}
             subheader={`${createdDateTime}    ${crimeType} crime`}
           />
           <CardContent>
+            <Menu
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleCloseMenu}
+            >
+              <MenuItem onClick={() => setShowModal(true)}> Delete </MenuItem>
+              <CrudModal
+                openModal={showModal}
+                postId={postId}
+                userId={userId}
+              />
+            </Menu>
             <Typography variant="body2" component="p">
               {description}
             </Typography>

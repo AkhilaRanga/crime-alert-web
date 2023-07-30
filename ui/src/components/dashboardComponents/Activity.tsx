@@ -20,6 +20,7 @@ function Activity() {
     fetch(`/services/api/posts?userId=${userId}`, requestOptions)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
         setPostsList(data);
       })
       .catch((err) => console.error(err));
@@ -39,9 +40,10 @@ function Activity() {
       style={{ height: "80vh", overflow: "scroll" }}
     >
       <List>
-        {(postsList && postsList.map((post) => <PostListItem {...post} />)) || (
-          <></>
-        )}
+        {(postsList &&
+          postsList.map((post) => (
+            <PostListItem {...post} isActivity={true} />
+          ))) || <></>}
       </List>
     </div>
   );
