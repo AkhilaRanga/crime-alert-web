@@ -16,8 +16,8 @@ import CloseIcon from "@material-ui/icons/Close";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles({
-  card: { maxWidth: "80%", left: "15%", top: "10%", position: "fixed" },
-  cardHeader: { backgroundColor: "#0288d1", color: "white" },
+  card: { maxWidth: "80%", left: "30%", top: "25%", position: "fixed" },
+  cardHeader: { backgroundColor: "#26a69a", color: "white" },
   cardContent: { maxHeight: 400, overflow: "overlay" },
   typography: {
     paddingLeft: 20,
@@ -26,16 +26,19 @@ const useStyles = makeStyles({
   },
 });
 
-function CrudModal(props: any) {
+interface CrudModalProps {
+  openModal: boolean;
+  setOpenModal: (openModal: boolean) => void;
+  postId: string;
+  userId: string;
+  fetchData?: () => void;
+}
+
+function CrudModal(props: CrudModalProps) {
   const classes = useStyles();
-  const { openModal, postId, userId } = props;
-  const [open, setOpen] = React.useState(false);
+  const { openModal, setOpenModal, postId, userId, fetchData } = props;
   const [formMessage, setFormMessage] = React.useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
-
-  React.useEffect(() => {
-    setOpen(openModal);
-  }, [openModal]);
 
   const handleDelete = () => {
     console.log("Call Delete Logic" + postId);
@@ -44,17 +47,17 @@ function CrudModal(props: any) {
       headers: { "Content-Type": "application/json" },
     };
     fetch(`/services/api/posts/${postId}/${userId}`, requestOptions)
-      .then((response) => response.json())
+      .then((response) => response.text())
       .then((data) => {
         setFormMessage(data);
-        setOpen(false);
-        window.location.reload();
+        setOpenModal(false);
+        fetchData && fetchData();
       });
   };
   return (
     <Modal
-      open={open}
-      onClose={() => setOpen(false)}
+      open={openModal}
+      onClose={() => setOpenModal(false)}
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
@@ -62,7 +65,10 @@ function CrudModal(props: any) {
         <CardHeader
           className={classes.cardHeader}
           action={
-            <IconButton aria-label="settings" onClick={() => setOpen(false)}>
+            <IconButton
+              aria-label="settings"
+              onClick={() => setOpenModal(false)}
+            >
               <CloseIcon />
             </IconButton>
           }
@@ -72,7 +78,8 @@ function CrudModal(props: any) {
         <CardContent className={classes.cardContent}>
           <Typography className={classes.typography}>
             <Grid direction="row" container spacing={1}>
-              "Do you want to delete the post? If yes, please press Delete"
+              "Do you want to delete the post (Includes photos/videos)? If yes,
+              please press Delete"
             </Grid>
           </Typography>
         </CardContent>
