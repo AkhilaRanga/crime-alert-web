@@ -1,8 +1,9 @@
 import React from "react";
 import { PostModel } from "../../models/postModel";
 import { UserContext } from "../../contexts/UserContext";
-import { List, makeStyles } from "@material-ui/core";
+import { List, Button } from "@material-ui/core";
 import PostListItem from "./PostListItem";
+import CreatePost from "../postComponents/CreatePost";
 
 export const activityTestId = "activity-test-id";
 
@@ -10,8 +11,9 @@ function Activity() {
   const [postsList, setPostsList] = React.useState<PostModel[]>();
   const { userProps } = React.useContext(UserContext);
   const userId = userProps.userId;
+  const [openCreatePost, setOpenCreatePost] = React.useState(false);
 
-  React.useEffect(() => {
+  const fetchData = React.useCallback(() => {
     const requestOptions = {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -26,23 +28,36 @@ function Activity() {
       .catch((err) => console.error(err));
   }, [userId]);
 
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      width: "100%",
-      maxWidth: 360,
-      backgroundColor: theme.palette.background.paper,
-    },
-  }));
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <div
       data-testid={activityTestId}
       style={{ height: "80vh", overflow: "scroll" }}
     >
+      <Button
+        onClick={() => setOpenCreatePost(true)}
+        variant="contained"
+        color="primary"
+      >
+        Create Post
+      </Button>
+      <CreatePost
+        openPostModal={openCreatePost}
+        setOpenPostModal={setOpenCreatePost}
+        fetchData={fetchData}
+      />
       <List>
         {(postsList &&
           postsList.map((post) => (
-            <PostListItem {...post} isActivity={true} />
+            <PostListItem
+              post={post}
+              isActivity={true}
+              fetchData={fetchData}
+              key={post.string_id}
+            />
           ))) || <></>}
       </List>
     </div>

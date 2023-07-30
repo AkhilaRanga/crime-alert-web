@@ -17,6 +17,8 @@ import FlagIcon from "@material-ui/icons/Flag";
 import FlagOutlinedIcon from "@material-ui/icons/FlagOutlined";
 import CommentIcon from "@material-ui/icons/Comment";
 import CrudModal from "./CrudModal";
+import { PostModel } from "../../models/postModel";
+import EditPost from "../postComponents/CreatePost";
 
 export const postListItemTestId = "post-list-item-test-id";
 
@@ -26,9 +28,15 @@ const useStyles = makeStyles({
   },
 });
 
-function PostListItem(props: any) {
+interface PostListItemProps {
+  post: PostModel;
+  isActivity: boolean;
+  fetchData?: () => void;
+}
+
+function PostListItem(props: PostListItemProps) {
+  const { post, isActivity, fetchData } = props;
   const {
-    postId,
     userId,
     title,
     description,
@@ -36,8 +44,8 @@ function PostListItem(props: any) {
     likesCount,
     isFlagged,
     crimeType,
-    isActivity,
-  } = props;
+    string_id,
+  } = post;
   const classes = useStyles();
   const options: Intl.DateTimeFormatOptions = {
     weekday: "long",
@@ -49,6 +57,7 @@ function PostListItem(props: any) {
   const createdDateTime = today.toLocaleDateString("en-US", options);
   const [open, setOpen] = React.useState(false);
   const [showModal, setShowModal] = React.useState(false);
+  const [openEditPost, setOpenEditPost] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   function handleOpenMenu(event: React.MouseEvent<HTMLButtonElement>) {
@@ -84,12 +93,24 @@ function PostListItem(props: any) {
               open={open}
               onClose={handleCloseMenu}
             >
+              <MenuItem onClick={() => setOpenEditPost(true)}>Edit</MenuItem>
+              <EditPost
+                openPostModal={openEditPost}
+                setOpenPostModal={setOpenEditPost}
+                fetchData={fetchData}
+                isEditMode={true}
+                post={post}
+              />
               <MenuItem onClick={() => setShowModal(true)}> Delete </MenuItem>
               <CrudModal
                 openModal={showModal}
-                postId={postId}
+                setOpenModal={setShowModal}
+                postId={string_id}
                 userId={userId}
+                fetchData={fetchData}
               />
+              <MenuItem> Add photo/Video </MenuItem>
+              <MenuItem> Delete photo/video </MenuItem>
             </Menu>
             <Typography variant="body2" component="p">
               {description}

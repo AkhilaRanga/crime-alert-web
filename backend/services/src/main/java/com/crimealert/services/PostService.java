@@ -1,6 +1,7 @@
 package com.crimealert.services;
 
 import static com.mongodb.client.model.Filters.eq;
+
 import static com.mongodb.client.model.Sorts.descending;
 
 import java.io.File;
@@ -34,6 +35,7 @@ import com.crimealert.models.Video;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -44,6 +46,8 @@ import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import static com.mongodb.client.model.Projections.*;
+import java.util.Arrays;
 
 import jakarta.ws.rs.core.StreamingOutput;
 
@@ -259,15 +263,16 @@ public class PostService {
             MongoCollection<Document> collection = database.getCollection(PostConstant.COLLECTION);
 
             Bson filter = (location != null) ? Filters.eq("location", location) : Filters.eq("userId", userId);
+            Document sort = new Document(PostConstant.TIME_CREATED, -1);
             
-            FindIterable<Document> documents =  collection.find(filter).sort(descending(PostConstant.TIME_CREATED));
-            
-            Iterator it = documents.iterator();
-            
-            while (it.hasNext()) {
-               posts.add((Document) it.next());
-            }
-           
+            AggregateIterable<Document> results = collection.aggregate(Arrays.asList(
+                    new Document("$match", filter),
+                    new Document("$sort", sort),
+                    new Document("$addFields", new Document("string_id", new Document("$toString", "$_id")))
+                ));
+            for (Document doc : results) {
+            	posts.add(doc);
+            }           
 	    } catch (MongoException me) {
 	        System.err.println("An error occurred while attempting to run a command: " + me);
 	        throw me;
@@ -512,7 +517,7 @@ public class PostService {
 	private Document updatePostHelper(Post post, Document searchedPost, MongoCollection<Document> collection)
 	{
 		Document query = new Document();
-		query.append(PostConstant._ID, post.getId());
+		query.append(PostConstant._ID, searchedPost.getObjectId(PostConstant._ID));
 		
 		Document setData = new Document();
         //update post
@@ -522,8 +527,8 @@ public class PostService {
 			setData.append(PostConstant.DESCRIPTION, post.getDescription());
 		if(!post.getLocation().equals(searchedPost.get(PostConstant.LOCATION)))
 			setData.append(PostConstant.LOCATION, post.getLocation());
-		if(!post.getCrimeType().equals(searchedPost.get(PostConstant.CRIME_TYPE)))
-			setData.append(PostConstant.CRIME_TYPE, post.getLocation());
+		if(!(post.getCrimeType().toString()).equals(searchedPost.get(PostConstant.CRIME_TYPE).toString()))
+			setData.append(PostConstant.CRIME_TYPE, post.getCrimeType().toString());
 		if(post.getLikesCount() != searchedPost.getInteger(PostConstant.LIKES_COUNT))
 			setData.append(PostConstant.LIKES_COUNT, post.getLikesCount());
 		if(post.getIsFlagged() != searchedPost.getBoolean(PostConstant.IS_FLAGGED))

@@ -1,0 +1,6 @@
+.post-form {
+  display: flex;
+  flex-direction: column;
+  row-gap: 15px;
+  margin: 2px;
+}

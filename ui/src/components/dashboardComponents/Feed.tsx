@@ -1,7 +1,7 @@
 import React from "react";
 import { PostModel } from "../../models/postModel";
 import { UserContext } from "../../contexts/UserContext";
-import { List, makeStyles } from "@material-ui/core";
+import { List } from "@material-ui/core";
 import PostListItem from "./PostListItem";
 
 export const feedTestId = "feed-test-id";
@@ -25,14 +25,6 @@ function Feed() {
       .catch((err) => console.error(err));
   }, [userLocation]);
 
-  const useStyles = makeStyles((theme) => ({
-    root: {
-      width: "100%",
-      maxWidth: 360,
-      backgroundColor: theme.palette.background.paper,
-    },
-  }));
-
   return (
     <div
       data-testid={feedTestId}
@@ -41,7 +33,7 @@ function Feed() {
       <List>
         {(postsList &&
           postsList.map((post) => (
-            <PostListItem {...post} isActivity={false} />
+            <PostListItem post={post} isActivity={false} />
           ))) || <></>}
       </List>
     </div>
