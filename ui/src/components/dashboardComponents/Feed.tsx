@@ -39,9 +39,10 @@ function Feed() {
       style={{ height: "80vh", overflow: "scroll" }}
     >
       <List>
-        {(postsList && postsList.map((post) => <PostListItem {...post} />)) || (
-          <></>
-        )}
+        {(postsList &&
+          postsList.map((post) => (
+            <PostListItem {...post} isActivity={false} />
+          ))) || <></>}
       </List>
     </div>
   );
