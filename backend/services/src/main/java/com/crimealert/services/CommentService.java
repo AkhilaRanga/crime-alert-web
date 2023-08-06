@@ -4,11 +4,13 @@ import static com.mongodb.client.model.Filters.eq;
 
 import java.util.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import com.crimealert.Exceptions.ClientSideException;
@@ -16,10 +18,12 @@ import com.crimealert.constants.CommentConstant;
 import com.crimealert.constants.UserConstant;
 import com.crimealert.models.Comment;
 import com.mongodb.MongoException;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
@@ -37,6 +41,7 @@ public class CommentService {
 	    document.append(CommentConstant.COMMENT, comment.getComment());
 	    document.append(CommentConstant.IS_FLAGGED, false);
 	    document.append(CommentConstant.LIKES_COUNT, 0);
+	    document.append(CommentConstant.IS_DELETED, false);
 	    document.append(CommentConstant.TIME_CREATED, new Date());	
 	    return document;
 	}
@@ -80,7 +85,7 @@ public class CommentService {
 	    return createDocument;
 	}
 	
-	public Document updateComment(Comment comment) {
+	public Document updateComment(Comment comment, String commentId) {
 		Document document = null;
         try {
         	Document userLoggedIn = getUserLoginService().searchSession(comment.getUserId());
@@ -96,7 +101,7 @@ public class CommentService {
 					.getDatabase(CommentConstant.DB)
 					.getCollection(CommentConstant.COLLECTION);
             
-            Document oldComment = commentCollection.find(eq(CommentConstant._ID, new ObjectId(comment.getId()))).first();
+            Document oldComment = commentCollection.find(eq(CommentConstant._ID, new ObjectId(commentId))).first();
             
 			if(oldComment == null)
 				throw new ClientSideException("Comment with given id does not exist");
@@ -105,7 +110,7 @@ public class CommentService {
 			document = updateCommentHelper(comment,oldComment);
 			
 			Document query = new Document();
-			query.append(CommentConstant._ID, new ObjectId(comment.getId()));
+			query.append(CommentConstant._ID, new ObjectId(commentId));
 			
 			UpdateResult postUpdateResponse = commentCollection.updateOne(query, document);
 			
@@ -131,10 +136,13 @@ public class CommentService {
             MongoCollection<Document> commentsCollection = mongoClient
 					.getDatabase(CommentConstant.DB)
 					.getCollection(CommentConstant.COLLECTION);
-            FindIterable<Document> listDocuments =  commentsCollection.find(eq(CommentConstant.POST_ID, postId));
-            Iterator listIterator = listDocuments.iterator();
-            while (listIterator.hasNext()) {
-            	comments.add((Document) listIterator.next());
+            Bson filter = Filters.eq(CommentConstant.POST_ID, postId);
+            AggregateIterable<Document> results = commentsCollection.aggregate(Arrays.asList(
+                    new Document("$match", filter),
+                    new Document("$addFields", new Document("string_id", new Document("$toString", "$_id")))
+                ));
+            for (Document doc : results) {
+            	comments.add(doc);
             }
         } catch (MongoException me) {
 	        System.err.println("An error occurred while attempting to run a command: " + me);
@@ -187,22 +195,38 @@ public class CommentService {
 			if(oldComment == null)
 				throw new ClientSideException("Comment with given id does not exist");
 			
-			if(oldComment.get(CommentConstant.PARENT_ID) == null || oldComment.get(CommentConstant.PARENT_ID).toString().isEmpty())
-			{
+//			if(oldComment.get(CommentConstant.PARENT_ID) == null || oldComment.get(CommentConstant.PARENT_ID).toString().isEmpty())
+//			{
 				
-				FindIterable<Document>childComments = commentCollection.find(eq(CommentConstant.PARENT_ID, commentId));
+//				FindIterable<Document>childComments = commentCollection.find(eq(CommentConstant.PARENT_ID, commentId));
 				
-				System.out.println("Number of child comments : " +  childComments.first());
-				
-				for (Document document : childComments) {
-					System.out.println("Child doc:" +  document.get(CommentConstant._ID));
-					commentCollection.deleteOne(eq(CommentConstant._ID, document.get(CommentConstant._ID)));
-				}
-				
-			}
+//				System.out.println("Number of child comments : " +  childComments.first());
+//				
+//				for (Document document : childComments) {
+//					System.out.println("Child doc:" +  document.get(CommentConstant._ID));
+//					commentCollection.deleteOne(eq(CommentConstant._ID, document.get(CommentConstant._ID)));
+//				}Document setData = new Document();
+//			}
 		
-			DeleteResult commentDeleteResponse = commentCollection.deleteOne(eq(CommentConstant._ID, new ObjectId(commentId)));
+//			DeleteResult commentDeleteResponse = commentCollection.deleteOne(eq(CommentConstant._ID, new ObjectId(commentId)));
+
+			
+	        //update comment
+			Document setData = new Document();
+			setData.append(CommentConstant.COMMENT, "-");
+			setData.append(CommentConstant.IS_DELETED, true);
+			setData.append(CommentConstant.TIME_UPDATED, new Date());
+			
+			Document updateDocument = new Document();
+			updateDocument.append("$set", setData);
+			
+			Document query = new Document();
+			query.append(CommentConstant._ID, new ObjectId(commentId));
+			
+			UpdateResult commentDeleteResponse = commentCollection.updateOne(query, updateDocument);
 			System.out.println("Deletion result" + commentDeleteResponse);
+			
+			getDBConnectionService().closeDBConnection();
             
         } catch (MongoException me) {
 	        System.err.println("An error occurred while attempting to run a command: " + me);

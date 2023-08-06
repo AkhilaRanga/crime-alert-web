@@ -29,6 +29,8 @@ public class Comment {
 	private Date timeCreated;
 	
 	private Date timeUpdated;
+	
+	private boolean isDeleted;
 
 	// _id
 	public String getId() {
@@ -108,5 +110,14 @@ public class Comment {
 	
 	public void setTimeUpdated(Date timeUpdated) {
 		this.timeUpdated = timeUpdated;
+	}
+	
+	// isDeleted
+	public boolean geIsDeleted() {
+		return this.isDeleted;
+	}
+	
+	public void setIsDeleted(boolean isDeleted) {
+		this.isDeleted = isDeleted;
 	}
 }

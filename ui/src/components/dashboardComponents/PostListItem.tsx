@@ -19,6 +19,7 @@ import CommentIcon from "@material-ui/icons/Comment";
 import CrudModal from "./CrudModal";
 import { PostModel } from "../../models/postModel";
 import EditPost from "../postComponents/CreatePost";
+import CommentDrawer from "../commentComponents/CommentDrawer";
 
 export const postListItemTestId = "post-list-item-test-id";
 
@@ -59,6 +60,7 @@ function PostListItem(props: PostListItemProps) {
   const [showModal, setShowModal] = React.useState(false);
   const [openEditPost, setOpenEditPost] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [commentDrawerOpen, setCommentDrawerOpen] = React.useState(false);
 
   function handleOpenMenu(event: React.MouseEvent<HTMLButtonElement>) {
     setAnchorEl(event.currentTarget);
@@ -68,6 +70,9 @@ function PostListItem(props: PostListItemProps) {
     setAnchorEl(null);
     setOpen(false);
   }
+  const handleCommentDrawerOpen = () => {
+    setCommentDrawerOpen(true);
+  };
 
   return (
     <div data-testid={postListItemTestId}>
@@ -115,6 +120,11 @@ function PostListItem(props: PostListItemProps) {
             <Typography variant="body2" component="p">
               {description}
             </Typography>
+            <CommentDrawer
+              commentDrawerOpen={commentDrawerOpen}
+              setCommentDrawerOpen={setCommentDrawerOpen}
+              post={post}
+            />
           </CardContent>
           <CardActions disableSpacing>
             <IconButton aria-label="like">
@@ -129,7 +139,7 @@ function PostListItem(props: PostListItemProps) {
               )}
             </IconButton>
             <IconButton>
-              <CommentIcon color="primary" />
+              <CommentIcon color="primary" onClick={handleCommentDrawerOpen} />
             </IconButton>
           </CardActions>
         </Card>

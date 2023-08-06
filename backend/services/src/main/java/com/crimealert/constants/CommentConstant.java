@@ -10,6 +10,7 @@ public class CommentConstant {
 	public static final String LIKES_COUNT = "likesCount";
 	public static final String TIME_CREATED = "timeCreated";
 	public static final String TIME_UPDATED = "timeUpdated";
+	public static final String IS_DELETED = "isDeleted";
 	public static final String DB = "crimeAlertDB";
 	public static final String COLLECTION = "comments";
 }
