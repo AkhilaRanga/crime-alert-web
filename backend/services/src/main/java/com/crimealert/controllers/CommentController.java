@@ -54,14 +54,15 @@ public class CommentController {
 	@PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+	@Path("/{commentId}")
 	public Response updateComment(
+			@PathParam("commentId") String commentId,
 			 Comment comment
 	) {
     	try {
-
-    		if ((comment.getComment() != null && !comment.getComment().isEmpty()) && (comment.getId() != null && !comment.getId().isEmpty())) {
+    		if ((comment.getComment() != null && !comment.getComment().isEmpty()) && (commentId != null && !commentId.isEmpty())) {
     			
-        	Document response = getCommentService().updateComment(comment);
+        	Document response = getCommentService().updateComment(comment, commentId);
         		
         	System.out.println("Post Update Response : " + response.toJson());
         	
@@ -77,7 +78,7 @@ public class CommentController {
     	}
 	}
 	
-	@DELETE
+	@PUT
     @Produces(MediaType.APPLICATION_JSON)
 	@Path("/{commentId}/{userId}")
 	public Response deleteComment(
