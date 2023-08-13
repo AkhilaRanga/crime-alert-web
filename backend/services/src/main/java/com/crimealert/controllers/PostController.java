@@ -335,6 +335,40 @@ public class PostController {
     		return Response.status(500).entity(ex.getMessage()).build();
     	}
 	}
+	
+	@PUT
+    @Produces(MediaType.APPLICATION_JSON)
+	@Path("like/{userId}/{postId}")
+	public Response updatePostLikes(@PathParam("userId") String userId, @PathParam("postId") String postId) {
+    	try {
+			Document response = getPostService().updatePostLikeFlag(userId, postId, true, false);
+    		System.out.println("Post Updation Response : " + response.toJson());
+    		return Response.ok(response.toJson()).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@PUT
+    @Produces(MediaType.APPLICATION_JSON)
+	@Path("flag/{userId}/{postId}")
+	public Response updatePostFlags(@PathParam("userId") String userId, @PathParam("postId") String postId) {
+    	try {
+			Document response = getPostService().updatePostLikeFlag(userId, postId, false, true);
+    		System.out.println("Post Updation Response : " + response.toJson());
+    		return Response.ok(response.toJson()).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
 
 	@DELETE
     @Produces(MediaType.TEXT_PLAIN)

@@ -1,16 +1,11 @@
-import { useNavigate, Link } from "react-router-dom";
 import React, { Dispatch, SetStateAction } from "react";
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Icon,
-} from "@material-ui/core";
+import { List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import HomeIcon from "@material-ui/icons/Home";
 import HistoryIcon from "@material-ui/icons/History";
 import AccountBoxIcon from "@material-ui/icons/AccountBox";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
+import { UserContext } from "../../contexts/UserContext";
+import LogoutModal from "./LogoutModal";
 
 export const sideNavTestId = "side-nav-test-id";
 
@@ -27,6 +22,10 @@ interface SideNavProps {
 
 function SideNav(props: SideNavProps) {
   const { setActiveNav } = props;
+  const [openLogoutModal, setOpenLogoutModal] = React.useState<boolean>(false);
+  const { userProps } = React.useContext(UserContext);
+  const userId = userProps.userId;
+
   return (
     <div data-testid={sideNavTestId}>
       <List>
@@ -62,7 +61,7 @@ function SideNav(props: SideNavProps) {
         </ListItem>
         <ListItem
           button
-          onClick={() => setActiveNav(navItems.LOGOUT)}
+          onClick={() => setOpenLogoutModal(true)}
           key={navItems.LOGOUT}
         >
           <ListItemIcon>
@@ -71,6 +70,11 @@ function SideNav(props: SideNavProps) {
           <ListItemText primary={navItems.LOGOUT} />
         </ListItem>
       </List>
+      <LogoutModal
+        openModal={openLogoutModal}
+        setOpenModal={setOpenLogoutModal}
+        userId={userId}
+      />
     </div>
   );
 }

@@ -6,8 +6,9 @@ export interface PostModel {
   location: string;
   crimeType: string;
   isFlagged: boolean;
+  flagsCount: number;
   likesCount: number;
-  timeCreated: Date;
-  timeUpdated: Date;
+  timeCreated: string;
+  timeUpdated: string;
   string_id: string;
 }

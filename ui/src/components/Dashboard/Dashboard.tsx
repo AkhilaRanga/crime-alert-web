@@ -16,7 +16,6 @@ function Dashboard() {
       {activeNav === navItems.FEED && <Feed />}
       {activeNav === navItems.ACIVITY && <Activity />}
       {activeNav === navItems.PROFILE && <Profile />}
-      {activeNav === navItems.LOGOUT && <>Logout Placeholder</>}
     </div>
   );
 }

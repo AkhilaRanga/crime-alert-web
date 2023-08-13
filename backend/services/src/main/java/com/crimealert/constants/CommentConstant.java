@@ -7,6 +7,7 @@ public class CommentConstant {
 	public static final String COMMENT = "comment";
 	public static final String POST_ID = "postId";
 	public static final String IS_FLAGGED = "isFlagged";
+	public static final String FLAGS_COUNT = "flagsCount";
 	public static final String LIKES_COUNT = "likesCount";
 	public static final String TIME_CREATED = "timeCreated";
 	public static final String TIME_UPDATED = "timeUpdated";
