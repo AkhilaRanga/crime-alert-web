@@ -17,9 +17,12 @@ import FlagIcon from "@material-ui/icons/Flag";
 import FlagOutlinedIcon from "@material-ui/icons/FlagOutlined";
 import CommentIcon from "@material-ui/icons/Comment";
 import CrudModal from "./CrudModal";
+import UploadMediaModal from "./UploadMediaModal";
 import { PostModel } from "../../models/postModel";
 import EditPost from "../postComponents/CreatePost";
 import CommentDrawer from "../commentComponents/CommentDrawer";
+import DeleteMediaModal from "./DeleteMediaModal";
+import GetMediaModal from "./GetMediaModal";
 
 export const postListItemTestId = "post-list-item-test-id";
 
@@ -58,9 +61,111 @@ function PostListItem(props: PostListItemProps) {
   const createdDateTime = today.toLocaleDateString("en-US", options);
   const [open, setOpen] = React.useState(false);
   const [showModal, setShowModal] = React.useState(false);
+  const [showMediaModal, setShowMediaModal] = React.useState(false);
+  const [showDeleteMediaModal, setShowDeleteMediaModal] = React.useState(false);
+  const [showGetMediaModal, setShowGetMediaModal] = React.useState(false);
   const [openEditPost, setOpenEditPost] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [commentDrawerOpen, setCommentDrawerOpen] = React.useState(false);
+  const [photos, setPhotos] = React.useState<any>();
+  const [videos, setVideos] = React.useState<any>();
+
+  const fetchId = async () => {
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    const response = await fetch(
+      `/services/api/posts/getPhotos?postId=${string_id}`,
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        return data[0];
+      })
+      .catch((err) => {
+        console.error("Request failed", err);
+      });
+
+    return response;
+  };
+
+  const fetchVideoId = async () => {
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    const response = await fetch(
+      `/services/api/posts/getVideos?postId=${string_id}`,
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        return data[0];
+      })
+      .catch((err) => {
+        console.error("Request failed", err);
+      });
+
+    return response;
+  };
+
+  const fetchMedia = async (photoId: string) => {
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    const response = await fetch(
+      `/services/api/posts/downloadPhoto/${photoId}`,
+      requestOptions
+    )
+      .then((response) => response.blob())
+      .then((data) => {
+        console.log("Downloaded photo");
+        return URL.createObjectURL(data);
+      })
+      .catch((err) => {
+        console.error("Request failed", err);
+      });
+
+    return response;
+  };
+
+  const fetchVideoMedia = async (videoId: string) => {
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    const response = await fetch(
+      `/services/api/posts/downloadVideo/${videoId}`,
+      requestOptions
+    )
+      .then((response) => response.blob())
+      .then((data) => {
+        console.log("Downloaded video");
+        return URL.createObjectURL(data);
+      })
+      .catch((err) => {
+        console.error("Request failed", err);
+      });
+
+    return response;
+  };
+
+  const fetchBoth = async () => {
+    const photoId = await fetchId();
+    const videoId = await fetchVideoId();
+    const imageURL = await fetchMedia(photoId);
+    const videoURL = await fetchVideoMedia(videoId);
+    setPhotos(imageURL);
+    setVideos(videoURL);
+  };
 
   function handleOpenMenu(event: React.MouseEvent<HTMLButtonElement>) {
     setAnchorEl(event.currentTarget);
@@ -114,8 +219,45 @@ function PostListItem(props: PostListItemProps) {
                 userId={userId}
                 fetchData={fetchData}
               />
-              <MenuItem> Add photo/Video </MenuItem>
-              <MenuItem> Delete photo/video </MenuItem>
+              <MenuItem onClick={() => setShowMediaModal(true)}>
+                Add photo/Video
+              </MenuItem>
+              <UploadMediaModal
+                openModal={showMediaModal}
+                setOpenModal={setShowMediaModal}
+                postId={string_id}
+                userId={userId}
+                fetchData={fetchData}
+              ></UploadMediaModal>
+              <MenuItem onClick={() => setShowDeleteMediaModal(true)}>
+                Delete photo/video
+              </MenuItem>
+              <DeleteMediaModal
+                openModal={showDeleteMediaModal}
+                setOpenModal={setShowDeleteMediaModal}
+                postId={string_id}
+                userId={userId}
+                fetchData={fetchData}
+              ></DeleteMediaModal>
+              <MenuItem
+                onClick={() => {
+                  setShowGetMediaModal(true);
+                  fetchBoth();
+                }}
+              >
+                Show photos/Videos
+              </MenuItem>
+              <GetMediaModal
+                openModal={showGetMediaModal}
+                setOpenModal={setShowGetMediaModal}
+                postId={string_id}
+                userId={userId}
+                fetchData={fetchData}
+                photos={photos}
+                videos={videos}
+                setPhotos={setPhotos}
+                setVideos={setVideos}
+              ></GetMediaModal>
             </Menu>
             <Typography variant="body2" component="p">
               {description}
