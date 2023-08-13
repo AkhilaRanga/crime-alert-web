@@ -15,6 +15,7 @@ import org.bson.types.ObjectId;
 
 import com.crimealert.Exceptions.ClientSideException;
 import com.crimealert.constants.CommentConstant;
+import com.crimealert.constants.PostConstant;
 import com.crimealert.constants.UserConstant;
 import com.crimealert.models.Comment;
 import com.mongodb.MongoException;
@@ -41,6 +42,7 @@ public class CommentService {
 	    document.append(CommentConstant.COMMENT, comment.getComment());
 	    document.append(CommentConstant.IS_FLAGGED, false);
 	    document.append(CommentConstant.LIKES_COUNT, 0);
+	    document.append(CommentConstant.FLAGS_COUNT, 0);
 	    document.append(CommentConstant.IS_DELETED, false);
 	    document.append(CommentConstant.TIME_CREATED, new Date());	
 	    return document;
@@ -127,6 +129,57 @@ public class CommentService {
 	        throw ce;
 	    }
 	    return document;
+	}
+	
+	public Document updateCommentLikeFlag(String userId, String commentId, boolean like, boolean flag) {
+		Document updateDocument;
+		try {
+			Document userLoggedIn = getUserLoginService().searchSession(userId);
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+			MongoCollection<Document> commentCollection = mongoClient
+					.getDatabase(CommentConstant.DB)
+					.getCollection(CommentConstant.COLLECTION);
+			
+			// Check comment exists
+			Document commentDocument = commentCollection.find(eq(CommentConstant._ID, new ObjectId(commentId))).first();
+			if(commentDocument == null)
+				throw new ClientSideException("Comment with given id does not exist");
+			
+			// update the comment
+			Document query = new Document();
+			query.append(CommentConstant._ID, commentDocument.getObjectId(CommentConstant._ID));
+			
+			Document setData = new Document();
+			Boolean isCommentDeleted = commentDocument.getBoolean(CommentConstant.IS_DELETED);
+			if(isCommentDeleted)
+				throw new ClientSideException("This is a deleted comment");
+			if(like)
+				setData.append(CommentConstant.LIKES_COUNT, commentDocument.getInteger(CommentConstant.LIKES_COUNT) + 1);
+			if(flag)
+				setData.append(CommentConstant.FLAGS_COUNT, commentDocument.getInteger(CommentConstant.FLAGS_COUNT) + 1);
+			if(commentDocument.getInteger(CommentConstant.FLAGS_COUNT) >= 10)
+				setData.append(CommentConstant.IS_FLAGGED, true);
+//			setData.append(CommentConstant.TIME_UPDATED, new Date());
+			
+			updateDocument = new Document();
+			updateDocument.append("$set", setData);
+	        UpdateResult commentUpdateResponse = commentCollection.updateOne(query, updateDocument);
+	        
+	        System.out.println("Comment updation response" + commentUpdateResponse);
+			getDBConnectionService().closeDBConnection();
+			System.out.println("Document update complete");
+	    } catch (MongoException me) {
+	        System.err.println("An error occurred while attempting to run a command: " + me);
+	        throw me;
+	    }
+	    catch (ClientSideException ce) {
+	        System.err.println("An error occurred while attempting to run a command: " + ce);
+	        throw ce;
+	    }
+	    return updateDocument;
 	}
 	
 	public List<Document> listComments(String postId) {
@@ -247,10 +300,12 @@ public class CommentService {
         //update comment
 		if(!newComment.getComment().equals(oldComment.get(CommentConstant.COMMENT)))
 			setData.append(CommentConstant.COMMENT, newComment.getComment());
-		if(newComment.getLikesCount() != oldComment.getInteger(CommentConstant.LIKES_COUNT))
-			setData.append(CommentConstant.LIKES_COUNT, newComment.getLikesCount());
-		if(newComment.getIsFlagged() != oldComment.getBoolean(CommentConstant.IS_FLAGGED))
-			setData.append(CommentConstant.IS_FLAGGED, newComment.getIsFlagged());
+//		if(newComment.getLikesCount() != oldComment.getInteger(CommentConstant.LIKES_COUNT))
+//			setData.append(CommentConstant.LIKES_COUNT, newComment.getLikesCount());
+//		if(newComment.getFlagsCount() != oldComment.getInteger(CommentConstant.FLAGS_COUNT))
+//			setData.append(CommentConstant.FLAGS_COUNT, newComment.getFlagsCount());
+//		if(newComment.getIsFlagged() != oldComment.getBoolean(CommentConstant.IS_FLAGGED))
+//			setData.append(CommentConstant.IS_FLAGGED, newComment.getIsFlagged());
 		setData.append(CommentConstant.TIME_UPDATED, new Date());
 		
 		Document updateDocument = new Document();

@@ -5,6 +5,7 @@ export interface CommentModel {
   comment: string;
   parentId: string;
   isFlagged: boolean;
+  flagsCount: number;
   likesCount: number;
   timeCreated: string;
   timeUpdated: string;

@@ -23,6 +23,8 @@ public class Comment {
 	private String parentId;
 
 	private boolean isFlagged;
+
+	private int flagsCount;
 	
 	private int likesCount;
 	
@@ -83,6 +85,15 @@ public class Comment {
 	
 	public void setIsFlagged(boolean isFlagged) {
 		this.isFlagged = isFlagged;
+	}
+	
+	// flagsCount
+	public int getFlagsCount() {
+		return this.flagsCount;
+	}
+	
+	public void setFlagsCount(int flagsCount) {
+		this.flagsCount = flagsCount;
 	}
 	
 	// likesCount

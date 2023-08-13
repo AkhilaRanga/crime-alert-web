@@ -80,6 +80,36 @@ public class CommentController {
 	
 	@PUT
     @Produces(MediaType.APPLICATION_JSON)
+	@Path("like/{userId}/{commentId}")
+	public Response updateCommentLikes(@PathParam("userId") String userId, @PathParam("commentId") String commentId) {
+    	try {
+        	Document response = getCommentService().updateCommentLikeFlag(userId, commentId, true, false);
+        	System.out.println("Comment Update Response : " + response.toJson());
+        	return Response.ok(response.toJson()).build();	
+    	} catch (ClientSideException ex) {
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@PUT
+    @Produces(MediaType.APPLICATION_JSON)
+	@Path("flag/{userId}/{commentId}")
+	public Response updateCommentFlags(@PathParam("userId") String userId, @PathParam("commentId") String commentId) {
+    	try {
+        	Document response = getCommentService().updateCommentLikeFlag(userId, commentId, false, true);
+        	System.out.println("Comment Update Response : " + response.toJson());
+        	return Response.ok(response.toJson()).build();	
+    	} catch (ClientSideException ex) {
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@PUT
+    @Produces(MediaType.APPLICATION_JSON)
 	@Path("/{commentId}/{userId}")
 	public Response deleteComment(
 			@NotNull@PathParam("commentId")String commentId,@NotNull@PathParam("userId")String userId

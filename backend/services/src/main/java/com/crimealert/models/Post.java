@@ -26,7 +26,8 @@ public class Post {
 	private String location;
 
 	private crimeLevel crimeType;
-	private boolean isFlagged; // should this be count?
+	private boolean isFlagged;
+	private int flagsCount;
 	private int likesCount;
 	private Date timeCreated;
 	private Date timeUpdated;
@@ -92,6 +93,15 @@ public class Post {
 	
 	public void setIsFlagged(boolean isFlagged) {
 		this.isFlagged = isFlagged;
+	}
+	
+	// flagsCount
+	public int getFlagsCount() {
+		return this.flagsCount;
+	}
+	
+	public void setFlagsCount(int flagsCount) {
+		this.flagsCount = flagsCount;
 	}
 	
 	// likesCount

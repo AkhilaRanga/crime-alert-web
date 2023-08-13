@@ -10,8 +10,7 @@ function Feed() {
   const [postsList, setPostsList] = React.useState<PostModel[]>();
   const { userProps } = React.useContext(UserContext);
   const userLocation = userProps.location;
-
-  React.useEffect(() => {
+  const fetchData = React.useCallback(() => {
     const requestOptions = {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -25,6 +24,10 @@ function Feed() {
       .catch((err) => console.error(err));
   }, [userLocation]);
 
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   return (
     <div
       data-testid={feedTestId}
@@ -33,7 +36,12 @@ function Feed() {
       <List>
         {(postsList &&
           postsList.map((post) => (
-            <PostListItem post={post} isActivity={false} />
+            <PostListItem
+              post={post}
+              isActivity={false}
+              fetchData={fetchData}
+              key={post.string_id}
+            />
           ))) || <></>}
       </List>
     </div>

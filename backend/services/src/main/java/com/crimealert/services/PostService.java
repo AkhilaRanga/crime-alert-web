@@ -173,8 +173,9 @@ public class PostService {
 	    document.append(PostConstant.LOCATION, post.getLocation());
 	    document.append(PostConstant.TITLE, post.getTitle());
 	    document.append(PostConstant.CRIME_TYPE, post.getCrimeType().toString());
-	    document.append(PostConstant.IS_FLAGGED, post.getIsFlagged());
-	    document.append(PostConstant.LIKES_COUNT, post.getLikesCount());
+	    document.append(PostConstant.IS_FLAGGED, false);
+	    document.append(PostConstant.FLAGS_COUNT, 0);
+	    document.append(PostConstant.LIKES_COUNT, 0);
 	    document.append(PostConstant.TIME_CREATED, new Date());	
 
 	    return document;
@@ -488,6 +489,54 @@ public class PostService {
 	    return updateDocument;
 	}
 	
+	public Document updatePostLikeFlag(String userId, String postId, boolean like, boolean flag) {
+		Document updateDocument;
+		try {
+			Document userLoggedIn = getUserLoginService().searchSession(userId);
+			
+			if(userLoggedIn == null)
+				throw new ClientSideException("User is not logged In");
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+			MongoCollection<Document> postCollection = mongoClient
+					.getDatabase(PostConstant.DB)
+					.getCollection(PostConstant.COLLECTION);
+			
+			// Check post exists
+			Document postDocument = postCollection.find(eq(PostConstant._ID, new ObjectId(postId))).first();
+			if(postDocument == null)
+				throw new ClientSideException("Post with given id does not exist");
+			
+			// update the post
+			Document query = new Document();
+			query.append(PostConstant._ID, postDocument.getObjectId(PostConstant._ID));
+			
+			Document setData = new Document();
+			if(like)
+				setData.append(PostConstant.LIKES_COUNT, postDocument.getInteger(PostConstant.LIKES_COUNT) + 1);
+			if(flag)
+				setData.append(PostConstant.FLAGS_COUNT, postDocument.getInteger(PostConstant.FLAGS_COUNT) + 1);
+			if(postDocument.getInteger(PostConstant.FLAGS_COUNT) >= 10)
+				setData.append(PostConstant.IS_FLAGGED, true);
+//			setData.append(PostConstant.TIME_UPDATED, new Date());
+			
+			updateDocument = new Document();
+			updateDocument.append("$set", setData);
+	        UpdateResult postUpdateResponse = postCollection.updateOne(query, updateDocument);
+	        
+	        System.out.println("Post updation response" + postUpdateResponse);
+			getDBConnectionService().closeDBConnection();
+			System.out.println("Document update complete");
+	    } catch (MongoException me) {
+	        System.err.println("An error occurred while attempting to run a command: " + me);
+	        throw me;
+	    }
+	    catch (ClientSideException ce) {
+	        System.err.println("An error occurred while attempting to run a command: " + ce);
+	        throw ce;
+	    }
+	    return updateDocument;
+	}
+	
 	public String deletePhoto(String postId) {
 		try {
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
@@ -623,10 +672,12 @@ public class PostService {
 			setData.append(PostConstant.LOCATION, post.getLocation());
 		if(!(post.getCrimeType().toString()).equals(searchedPost.get(PostConstant.CRIME_TYPE).toString()))
 			setData.append(PostConstant.CRIME_TYPE, post.getCrimeType().toString());
-		if(post.getLikesCount() != searchedPost.getInteger(PostConstant.LIKES_COUNT))
-			setData.append(PostConstant.LIKES_COUNT, post.getLikesCount());
-		if(post.getIsFlagged() != searchedPost.getBoolean(PostConstant.IS_FLAGGED))
-			setData.append(PostConstant.IS_FLAGGED, post.getIsFlagged());
+//		if(post.getLikesCount() != searchedPost.getInteger(PostConstant.LIKES_COUNT))
+//			setData.append(PostConstant.LIKES_COUNT, post.getLikesCount());
+//		if(post.getFlagsCount() != searchedPost.getInteger(PostConstant.FLAGS_COUNT))
+//			setData.append(PostConstant.FLAGS_COUNT, post.getFlagsCount());
+//		if(post.getIsFlagged() != searchedPost.getBoolean(PostConstant.IS_FLAGGED))
+//			setData.append(PostConstant.IS_FLAGGED, post.getIsFlagged());
 		setData.append(PostConstant.TIME_UPDATED, new Date());
 		
 		Document updateDocument = new Document();

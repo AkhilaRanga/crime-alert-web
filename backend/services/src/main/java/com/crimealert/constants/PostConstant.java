@@ -8,6 +8,7 @@ public class PostConstant {
 	public static final String LOCATION = "location";
 	public static final String CRIME_TYPE = "crimeType";
 	public static final String IS_FLAGGED = "isFlagged";
+	public static final String FLAGS_COUNT = "flagsCount";
 	public static final String LIKES_COUNT = "likesCount";
 	public static final String TIME_CREATED = "timeCreated";
 	public static final String TIME_UPDATED = "timeUpdated";

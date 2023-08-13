@@ -18,6 +18,7 @@ import FlagOutlinedIcon from "@material-ui/icons/FlagOutlined";
 import ReplyIcon from "@material-ui/icons/Reply";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { UserContext } from "../../contexts/UserContext";
+import CommentDeleteModal from "./CommentDeleteModal";
 
 export const commentCardTestId = "comment-card-test-id";
 
@@ -43,6 +44,7 @@ function CommentCard(props: CommentCardProps) {
   const [formMessage, setFormMessage] = React.useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
   const [isEdit, setIsEdit] = React.useState<boolean>(false);
+  const [openDeleteModal, setOpenDeleteModal] = React.useState<boolean>(false);
   const [commentField, setCommentField] = React.useState<string | undefined>(
     comment?.comment
   );
@@ -80,6 +82,7 @@ function CommentCard(props: CommentCardProps) {
     fetch(`/services/api/comments/${comment?.string_id}`, requestOptions)
       .then((response) => response.json())
       .then((data) => {
+        setOpenSnackbar(true);
         setFormMessage("Comment updated");
         setIsEdit(false);
         setCommentField("");
@@ -87,22 +90,36 @@ function CommentCard(props: CommentCardProps) {
       });
   };
 
-  const handleDelete = () => {
+  const handleLikeFlag = (methodName: string) => {
     const requestOptions = {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
     };
 
     fetch(
-      `/services/api/comments/${comment?.string_id}/${userId}`,
+      `/services/api/comments/${methodName}/${userId}/${comment?.string_id}`,
       requestOptions
     )
       .then((response) => response.json())
       .then((data) => {
-        setFormMessage("Comment deleted");
+        setOpenSnackbar(true);
+        setFormMessage(`Comment ${methodName} success`);
         fetchCommentData && fetchCommentData();
       });
   };
+
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  const createdDateTime =
+    comment?.timeCreated &&
+    new Date(comment.timeCreated.replace("[UTC]", "")).toLocaleDateString(
+      "en-US",
+      options
+    );
 
   return (
     <Card className={className}>
@@ -110,9 +127,6 @@ function CommentCard(props: CommentCardProps) {
         <Typography variant="body2" component="p">
           {!isEdit || comment?.isDeleted ? (
             <>
-              {comment?.isDeleted
-                ? "This comment was deleted"
-                : comment?.comment}
               <IconButton
                 aria-label="settings"
                 style={{ float: "right" }}
@@ -120,6 +134,16 @@ function CommentCard(props: CommentCardProps) {
               >
                 <MoreVertIcon />
               </IconButton>
+              <div style={{ fontSize: "smaller", color: "grey" }}>
+                {createdDateTime}
+              </div>
+              <div>
+                {comment?.isDeleted
+                  ? "*This comment was deleted*"
+                  : comment?.isFlagged
+                  ? "*This comment was flagged*"
+                  : comment?.comment}
+              </div>
             </>
           ) : (
             <TextField
@@ -147,26 +171,38 @@ function CommentCard(props: CommentCardProps) {
             Edit
           </MenuItem>
           <MenuItem
-            onClick={handleDelete}
+            onClick={() => setOpenDeleteModal(true)}
             disabled={comment?.isDeleted || userId !== comment?.userId}
           >
             Delete
           </MenuItem>
+          <CommentDeleteModal
+            openModal={openDeleteModal}
+            setOpenModal={setOpenDeleteModal}
+            commentId={comment?.string_id}
+            userId={userId}
+            fetchCommentData={fetchCommentData}
+          />
         </Menu>
       </CardContent>
       <CardActions disableSpacing>
         {!isEdit && (
           <>
-            <IconButton aria-label="like" size="small">
+            <IconButton
+              aria-label="like"
+              size="small"
+              onClick={() => handleLikeFlag("like")}
+            >
               <FavoriteBorderIcon color="primary" />
               {comment?.likesCount}
             </IconButton>
-            <IconButton aria-label="flag" size="small">
-              {comment?.isFlagged ? (
-                <FlagIcon color="primary" />
-              ) : (
-                <FlagOutlinedIcon color="primary" />
-              )}
+            <IconButton
+              aria-label="flag"
+              size="small"
+              onClick={() => handleLikeFlag("flag")}
+            >
+              <FlagOutlinedIcon color="primary" />
+              {comment?.flagsCount}
             </IconButton>
             {isParent && (
               <IconButton

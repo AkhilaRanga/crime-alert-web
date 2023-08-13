@@ -10,6 +10,7 @@ import {
   CardActions,
   MenuItem,
   Menu,
+  Snackbar,
 } from "@material-ui/core";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import FavoriteBorderIcon from "@material-ui/icons/FavoriteBorder";
@@ -46,6 +47,7 @@ function PostListItem(props: PostListItemProps) {
     description,
     timeCreated,
     likesCount,
+    flagsCount,
     isFlagged,
     crimeType,
     string_id,
@@ -57,8 +59,9 @@ function PostListItem(props: PostListItemProps) {
     month: "long",
     day: "numeric",
   };
-  const today = new Date();
-  const createdDateTime = today.toLocaleDateString("en-US", options);
+  const createdDateTime = new Date(
+    timeCreated.replace("[UTC]", "")
+  ).toLocaleDateString("en-US", options);
   const [open, setOpen] = React.useState(false);
   const [showModal, setShowModal] = React.useState(false);
   const [showMediaModal, setShowMediaModal] = React.useState(false);
@@ -166,6 +169,8 @@ function PostListItem(props: PostListItemProps) {
     setPhotos(imageURL);
     setVideos(videoURL);
   };
+  const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
+  const [formMessage, setFormMessage] = React.useState<string | null>(null);
 
   function handleOpenMenu(event: React.MouseEvent<HTMLButtonElement>) {
     setAnchorEl(event.currentTarget);
@@ -177,6 +182,24 @@ function PostListItem(props: PostListItemProps) {
   }
   const handleCommentDrawerOpen = () => {
     setCommentDrawerOpen(true);
+  };
+
+  const handleLikeFlag = (methodName: string) => {
+    const requestOptions = {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    fetch(
+      `/services/api/posts/${methodName}/${userId}/${string_id}`,
+      requestOptions
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        setOpenSnackbar(true);
+        setFormMessage(`Post ${methodName} success`);
+        fetchData && fetchData();
+      });
   };
 
   return (
@@ -194,7 +217,7 @@ function PostListItem(props: PostListItemProps) {
               )
             }
             title={title}
-            subheader={`${createdDateTime}    ${crimeType} crime`}
+            subheader={`${createdDateTime}; ${crimeType} crime`}
           />
           <CardContent>
             <Menu
@@ -260,7 +283,7 @@ function PostListItem(props: PostListItemProps) {
               ></GetMediaModal>
             </Menu>
             <Typography variant="body2" component="p">
-              {description}
+              {isFlagged ? "*This post was flagged*" : description}
             </Typography>
             <CommentDrawer
               commentDrawerOpen={commentDrawerOpen}
@@ -270,19 +293,28 @@ function PostListItem(props: PostListItemProps) {
           </CardContent>
           <CardActions disableSpacing>
             <IconButton aria-label="like">
-              <FavoriteBorderIcon color="primary" />
-              {likesCount}
+              <FavoriteBorderIcon
+                color="primary"
+                onClick={() => handleLikeFlag("like")}
+              />
+              <span style={{ fontSize: "smaller" }}>{likesCount}</span>
             </IconButton>
-            <IconButton aria-label="share">
-              {isFlagged ? (
-                <FlagIcon color="primary" />
-              ) : (
-                <FlagOutlinedIcon color="primary" />
-              )}
+            <IconButton
+              aria-label="flag"
+              onClick={() => handleLikeFlag("flag")}
+            >
+              <FlagOutlinedIcon color="primary" />
+              <span style={{ fontSize: "smaller" }}>{flagsCount}</span>
             </IconButton>
             <IconButton>
               <CommentIcon color="primary" onClick={handleCommentDrawerOpen} />
             </IconButton>
+            <Snackbar
+              open={openSnackbar}
+              autoHideDuration={6000}
+              message={formMessage}
+              onClose={() => setOpenSnackbar(false)}
+            />
           </CardActions>
         </Card>
       </ListItem>
