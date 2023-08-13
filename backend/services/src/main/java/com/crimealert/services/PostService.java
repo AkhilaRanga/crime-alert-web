@@ -4,11 +4,14 @@ import static com.mongodb.client.model.Filters.eq;
 
 import static com.mongodb.client.model.Sorts.descending;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -113,15 +116,19 @@ public class PostService {
 		    	  System.err.println("An error occurred" + ioe);
 		    	  throw ioe;
 		      }
+		      
+		    if(byteArray != null)
+		    {
 		    Photo photo = new Photo();
 			photo.setImage(new Binary(BsonBinarySubType.BINARY, byteArray));
-			photo.setTitle(fileDetail.get(i).getFileName());
+			photo.setTitle(fileDetail.get(0).getFileName());
 			photo.setPostId(postId);
 			Photo photoResponse = insertPhotos(photo);
-			
 			System.out.println("PhotoResponse:"+photoResponse);
+			photos.add(photoResponse);
+		    }
 			
-			photos.add(photoResponse);	
+				
 			i++;
 		}
 		
@@ -176,6 +183,7 @@ public class PostService {
 	private Photo insertPhotos(Photo photo)
 	{
 		try {
+			System.out.println("Inside insertPhotos");
 
         	MongoClient mongoClient = getDBConnectionService().getDBConnection();
 
@@ -329,6 +337,76 @@ public class PostService {
 	    }
 	}
 	
+	public List<String> getPhotos(String postId) {
+		try {
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+
+            MongoDatabase database = mongoClient.getDatabase(PhotoConstant.DB);
+            
+            Bson filter = Filters.eq(PhotoConstant.POST_ID, postId);
+
+            FindIterable<Document> document =  database.getCollection(PhotoConstant.COLLECTION).find(filter);
+            
+            Iterator<Document> it = document.iterator();
+            
+            List<String> photoIds = new ArrayList<>();
+			
+			while(it.hasNext())
+			{
+				Document doc = it.next();
+				photoIds.add(doc.get("_id").toString());
+				System.out.println(doc.get("_id").toString());
+				
+			}
+			
+			mongoClient.close();
+            
+            return photoIds;
+	    } catch (MongoException me) {
+	        System.err.println("An error occurred while attempting to run a command: " + me);
+	        throw me;
+	    }
+	    catch (ClientSideException ce) {
+	        System.err.println("An error occurred while attempting to run a command: " + ce);
+	        throw ce;
+	    }
+	}
+	
+	public List<String> getVideos(String postId) {
+		try {
+			MongoClient mongoClient = getDBConnectionService().getDBConnection();
+
+            MongoDatabase database = mongoClient.getDatabase(VideoConstant.DB);
+            
+            Bson filter = Filters.eq(VideoConstant.POST_ID, postId);
+
+            FindIterable<Document> document =  database.getCollection(VideoConstant.COLLECTION).find(filter);
+            
+            Iterator<Document> it = document.iterator();
+            
+            List<String> videoIds = new ArrayList<>();
+			
+			while(it.hasNext())
+			{
+				Document doc = it.next();
+				videoIds.add(doc.get("_id").toString());
+				System.out.println(doc.get("_id").toString());
+				
+			}
+			
+			mongoClient.close();
+            
+            return videoIds;
+	    } catch (MongoException me) {
+	        System.err.println("An error occurred while attempting to run a command: " + me);
+	        throw me;
+	    }
+	    catch (ClientSideException ce) {
+	        System.err.println("An error occurred while attempting to run a command: " + ce);
+	        throw ce;
+	    }
+	}
+	
 	public Document getVideo(String videoId) {
 		try {
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
@@ -357,20 +435,23 @@ public class PostService {
 
         MongoDatabase database = mongoClient.getDatabase(VideoConstant.DB);
         
-		GridFSBucket gridFSBucket = GridFSBuckets.create(database, VideoConstant.DB); 
-		// Replace "your-bucket" with your actual GridFS bucket name
-        GridFSDownloadStream downloadStream = gridFSBucket.openDownloadStream(videoId);
+		GridFSBucket gridFSBucket = GridFSBuckets.create(database, VideoConstant.COLLECTION); 
+		
         
         StreamingOutput streamingOutputVideo = output -> {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = downloadStream.read(buffer)) != -1) {
-                output.write(buffer, 0, bytesRead);
-            }
-            downloadStream.close();
-        };
+        try (GridFSDownloadStream downloadStream = gridFSBucket.openDownloadStream(videoId)) {
+            int fileLength = (int) downloadStream.getGridFSFile().getLength();
+            byte[] bytesToWriteTo = new byte[fileLength];
+            bytesToWriteTo = downloadStream.readAllBytes();
+            
+            output.write(bytesToWriteTo);
+            
+            
         
-        mongoClient.close();
+
+        }
+        };
+        //mongoClient.close();
         
         return streamingOutputVideo;
 	}
@@ -407,7 +488,7 @@ public class PostService {
 	    return updateDocument;
 	}
 	
-	public String deletePhoto(String photoId) {
+	public String deletePhoto(String postId) {
 		try {
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 			MongoCollection<Document> photoCollection = mongoClient
@@ -415,12 +496,12 @@ public class PostService {
 													.getCollection(PhotoConstant.COLLECTION);
 			
 			// Check photo exists
-			Document photoDocument = photoCollection.find(eq(PhotoConstant._ID, new ObjectId(photoId))).first();
+			FindIterable<Document> photoDocument = photoCollection.find(eq(PhotoConstant.POST_ID, postId));
 			if(photoDocument == null)
-				throw new ClientSideException("Photo with given id does not exist");
+				throw new ClientSideException("Post with given id does not exist");
 
 			 //Deleting the photo
-		     DeleteResult photoDeleteResponse = photoCollection.deleteOne(eq(PhotoConstant._ID, new ObjectId(photoId)));
+		     DeleteResult photoDeleteResponse = photoCollection.deleteMany(eq(PhotoConstant.POST_ID, postId));
 		     System.out.println("Deletion result" + photoDeleteResponse);
 		     
 		     getDBConnectionService().closeDBConnection();
@@ -432,10 +513,10 @@ public class PostService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return "Photo deleted successfully:" + photoId;
+	    return "Photos deleted successfully for postId:" + postId;
 	}
 	
-	public String deleteVideo(String videoId) {
+	public String deleteVideo(String postId) {
 		try {
 			MongoClient mongoClient = getDBConnectionService().getDBConnection();
 			MongoCollection<Document> videoCollection = mongoClient
@@ -444,17 +525,30 @@ public class PostService {
 			MongoCollection<Document> videoFilesCollection = mongoClient
 					.getDatabase(VideoConstant.DB)
 					.getCollection("videos.files");
+			MongoCollection<Document> videoChunksCollection = mongoClient
+					.getDatabase(VideoConstant.DB)
+					.getCollection("videos.chunks");
 			
 			// Check video exists
-			Document videoDocument = videoCollection.find(eq(VideoConstant._ID, new ObjectId(videoId))).first();
+			FindIterable<Document> videoDocument = videoCollection.find(eq(VideoConstant.POST_ID, postId));
 			if(videoDocument == null)
-				throw new ClientSideException("Video with given id does not exist");
+				throw new ClientSideException("Post with given id does not exist");
 		     
 			 //Deleting the video
-		     DeleteResult videoDeleteResponse1 = videoFilesCollection.deleteOne(eq(VideoConstant._ID, new ObjectId(videoDocument.getString("videoIdGridFS"))));
-		     DeleteResult videoDeleteResponse2 = videoCollection.deleteOne(eq(VideoConstant._ID, new ObjectId(videoId)));
-		     System.out.println("Deletion result" + videoDeleteResponse1);
-		     System.out.println("Deletion result" + videoDeleteResponse2);
+			Iterator it = videoDocument.iterator();
+			
+			while(it.hasNext())
+			{
+				Document videoDoc = (Document) it.next();
+		     DeleteResult videoDeleteResponse1 = videoFilesCollection.deleteOne(eq(VideoConstant._ID, new ObjectId(videoDoc.getString("videoIdGridFS"))));
+		     DeleteResult videoDeleteResponse = videoChunksCollection.deleteMany(eq("files_id", new ObjectId(videoDoc.getString("videoIdGridFS"))));
+		     System.out.println("Deletion result" + videoDeleteResponse1 + " : " + videoDeleteResponse);
+		     
+			}
+			
+			DeleteResult videoDeleteResponse2 = videoCollection.deleteMany(eq(VideoConstant.POST_ID, postId));
+			
+			System.out.println("Deletion result" + videoDeleteResponse2);
 		     
 		     getDBConnectionService().closeDBConnection();
 	    } catch (MongoException me) {
@@ -465,7 +559,7 @@ public class PostService {
 	        System.err.println("An error occurred while attempting to run a command: " + ce);
 	        throw ce;
 	    }
-	    return "Video deleted successfully:" + videoId;
+	    return "Videos deleted successfully for post:" + postId;
 	}
 
 	public String deletePost(String postId, String userId) {

@@ -1,6 +1,7 @@
 package com.crimealert.controllers;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,6 +82,12 @@ public class PostController {
 		List<Photo> photos = null;
     	try {
     		
+    			List<String> photoIds = getPostService().getPhotos(postId);
+    			
+    			if(photoIds.size() > 0)
+    				return Response.status(400).entity("More than one photo cannot be uploaded").build();
+    				
+    		
         		if(!postId.isBlank() && body != null)
 	    		{
         			List<InputStream> images  = new ArrayList<>();
@@ -88,11 +95,11 @@ public class PostController {
             		List<ContentDisposition> cd = new ArrayList<>();
             		
         			for(BodyPart part : body.getParent().getBodyParts()){
-        				
         		        InputStream is = part.getEntityAs(InputStream.class);
         		        ContentDisposition meta = part.getContentDisposition();
-        		        images.add(is);
-        		        cd.add(meta);
+        		        if(meta.getFileName() != null)
+        		        	images.add(is);
+        		        	cd.add(meta);
         			}
 
         			photos = getPostService().createPhotos(postId, images, cd);
@@ -124,14 +131,21 @@ public class PostController {
 		List<Video> videos = null;
     	try {
     		
+    		List<String> videoIds = getPostService().getVideos(postId);
+			
+			if(videoIds.size() > 0)
+				return Response.status(400).entity("More than one video cannot be uploaded").build();
+    		
     		if(postId != null && bodyVideo != null)
     		{
     			List<InputStream> videosInp  = new ArrayList<>();
         		
     			for(BodyPart part : bodyVideo.getParent().getBodyParts()){
-    				
+    				if(part.getContentDisposition().getFileName() != null)
+    				{
     		        InputStream is = part.getEntityAs(InputStream.class);
     		        videosInp.add(is);
+    				}
     			}
     			
     			 videos = getPostService().createVideos(postId, videosInp, videoName);
@@ -201,8 +215,40 @@ public class PostController {
 	}
 	
 	@GET
+    @Produces(MediaType.APPLICATION_JSON)
+	@Path("getPhotos")
+	public Response getPhotos(@QueryParam("postId")String postId) {
+    	try {
+    		List<String> photoIds = getPostService().getPhotos(postId);
+    		return Response.ok(photoIds).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@GET
+    @Produces(MediaType.APPLICATION_JSON)
+	@Path("getVideos")
+	public Response getVideos(@QueryParam("postId")String postId) {
+    	try {
+    		List<String> videoIds = getPostService().getVideos(postId);
+    		return Response.ok(videoIds).build();
+    	} catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	} catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+	}
+	
+	@GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-	@Path("downloadPhoto")
+	@Path("downloadPhoto/{photoId}")
 	public Response downloadPhoto(@PathParam("photoId")String photoId) {
     	try {
     		Document photoResponse = getPostService().getPhoto(photoId);
@@ -246,7 +292,7 @@ public class PostController {
 	
 	@GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-	@Path("downloadVideo")
+	@Path("downloadVideo/{videoId}")
 	public Response downloadVideo(@PathParam("videoId")String videoId) {
     	try {
     		Document video = getPostService().getVideo(videoId);
@@ -292,11 +338,11 @@ public class PostController {
 
 	@DELETE
     @Produces(MediaType.TEXT_PLAIN)
-	@Path("deletePhoto/{photoId}")
-	public Response deletePhoto(@PathParam("photoId") String photoId) {
+	@Path("deletePhoto/{postId}")
+	public Response deletePhoto(@PathParam("postId") String postId) {
     	try {
-    		String response = getPostService().deletePhoto(photoId);
-    		System.out.println("Photo Deletion Response : " + photoId + " " + response);
+    		String response = getPostService().deletePhoto(postId);
+    		System.out.println("Photo Deletion Response : " + postId + " " + response);
     		return Response.ok(response).build();
     	} catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);
@@ -309,11 +355,11 @@ public class PostController {
 	
 	@DELETE
     @Produces(MediaType.TEXT_PLAIN)
-	@Path("deleteVideo/{videoId}")
-	public Response deleteVideo(@PathParam("videoId") String videoId) {
+	@Path("deleteVideo/{postId}")
+	public Response deleteVideo(@PathParam("postId") String postId) {
     	try {
-    		String response = getPostService().deleteVideo(videoId);
-    		System.out.println("Video Deletion Response : " + videoId + " " + response);
+    		String response = getPostService().deleteVideo(postId);
+    		System.out.println("Video Deletion Response : " + postId + " " + response);
     		return Response.ok(response).build();
     	} catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);
