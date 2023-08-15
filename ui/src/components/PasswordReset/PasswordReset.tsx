@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Grid, Paper, TextField, Button, Snackbar } from "@material-ui/core";
 import { isValidPassword } from "../../utils/validationUtils";
+import { UserContext } from "../../contexts/UserContext";
 
 export const resetTestId = "reset-test-id";
 
@@ -14,6 +15,7 @@ function PasswordReset() {
   const [passwordError, setpasswordError] = useState<string | null>(null);
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+  const { userProps, setUserProps } = React.useContext(UserContext);
 
   const handlePasswordChange = (event: any) => {
     if (!isValidPassword(event.target.value)) {
@@ -36,12 +38,12 @@ function PasswordReset() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        newPassword: formValues["newPassword"],
-        confirmPassword: formValues["confirmPassword"],
+        email: userProps["email"],
+        password: formValues["newPassword"],
       }),
     };
 
-    fetch("/services/api/users/updateProfile", requestOptions)
+    fetch("/services/api/users/forgotPassword", requestOptions)
       .then((response) => response.text())
       .then((data) => {
         console.log(data);
