@@ -8,8 +8,9 @@ export const feedTestId = "feed-test-id";
 
 function Feed() {
   const [postsList, setPostsList] = React.useState<PostModel[]>();
-  const { userProps } = React.useContext(UserContext);
-  const userLocation = userProps.location;
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const userLocation = userProps?.location;
   const fetchData = React.useCallback(() => {
     const requestOptions = {
       method: "GET",

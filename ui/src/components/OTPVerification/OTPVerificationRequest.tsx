@@ -16,7 +16,9 @@ function OTPVerificationRequest() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
-  const { userProps, setUserProps } = React.useContext(UserContext);
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const updateUserProps = userContext?.updateUserProps;
   const navigate = useNavigate();
 
   const handleEmailChange = (event: any) => {
@@ -49,7 +51,8 @@ function OTPVerificationRequest() {
         console.log(data);
         setOpenSnackbar(true);
         setsuccessMessage(data);
-        setUserProps({ ...userProps, email: formValues["email"] });
+        updateUserProps &&
+          updateUserProps({ ...userProps, email: formValues["email"] });
         navigate(RouterPath.VERIFY);
       });
 

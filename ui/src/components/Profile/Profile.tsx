@@ -19,8 +19,9 @@ import { UserModel } from "../../models/userModel";
 export const profileTestId = "profile-test-id";
 
 function ProfileWrapper() {
-  const { userProps } = React.useContext(UserContext);
-  const userEmail = userProps.email;
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const userEmail = userProps?.email;
   const [userProfile, setUserProfile] = React.useState<UserModel>();
 
   const passwordPlaceholder = "***";

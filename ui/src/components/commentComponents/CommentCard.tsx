@@ -60,8 +60,9 @@ function CommentCard(props: CommentCardProps) {
     setOpenMenu(false);
   }
 
-  const { userProps } = React.useContext(UserContext);
-  const userId = userProps.userId;
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const userId = userProps?.userId;
 
   const handleCommentInputChange = (event: any) => {
     const { id, value } = event.target;

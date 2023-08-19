@@ -8,9 +8,10 @@ import { makeStyles } from "@material-ui/core";
 export const homeTestId = "home-test-id";
 
 function Home() {
-  const { userProps } = React.useContext(UserContext);
-  const isUserLoggedIn = userProps.isLoggedIn;
-  const isVerified = userProps.isVerified;
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const isUserLoggedIn = userProps?.isLoggedIn;
+  const isVerified = userProps?.isVerified;
   const useStyles = makeStyles((theme) => ({
     appDescription: {
       float: "left",
