@@ -156,6 +156,28 @@ public class UserController {
     	}
     }
     
+    @PUT
+    @Path("forgotPassword")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response forgotPassword(User user) 
+    {
+    	try {
+    		
+    	String response = getUserService().updateUserProfile(user);
+    	
+    	return Response.ok(response).build();
+    	} 
+    	catch (ClientSideException ex) {
+    		System.out.println("Validation Error:" + ex);
+    		return Response.status(400).entity(ex.getMessage()).build();
+    	}
+    	catch (Exception ex) {
+    		System.out.println("Response failed:" + ex);
+    		return Response.status(500).entity(ex.getMessage()).build();
+    	}
+    }
+    
     @DELETE
     @Path("deleteProfile")
     @Consumes(MediaType.APPLICATION_JSON)
