@@ -115,7 +115,7 @@ public class UserService {
             throw ce;
         }
 		
-		 return "Successfully Updated for " + user.getFullName();
+		 return "Successfully Updated for " + user.getEmail();
 	}
 	
 	public String deleteProfile(String email)
