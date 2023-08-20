@@ -23,8 +23,9 @@ interface SideNavProps {
 function SideNav(props: SideNavProps) {
   const { setActiveNav } = props;
   const [openLogoutModal, setOpenLogoutModal] = React.useState<boolean>(false);
-  const { userProps } = React.useContext(UserContext);
-  const userId = userProps.userId;
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const userId = userProps?.userId;
 
   return (
     <div data-testid={sideNavTestId}>

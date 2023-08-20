@@ -9,8 +9,9 @@ export const activityTestId = "activity-test-id";
 
 function Activity() {
   const [postsList, setPostsList] = React.useState<PostModel[]>();
-  const { userProps } = React.useContext(UserContext);
-  const userId = userProps.userId;
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const userId = userProps?.userId;
   const [openCreatePost, setOpenCreatePost] = React.useState(false);
 
   const fetchData = React.useCallback(() => {

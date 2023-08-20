@@ -11,7 +11,8 @@ export interface UserProps {
 
 export interface UserContextProps {
   userProps: UserProps;
-  setUserProps: (userProps: UserProps) => void;
+  updateUserProps: (userProps: UserProps) => void;
+  logout: () => void;
 }
 
 const defaultUserProps: UserProps = {
@@ -23,7 +24,37 @@ const defaultUserProps: UserProps = {
   isForgotPassword: false,
 };
 
-export const UserContext = React.createContext<UserContextProps>({
-  userProps: defaultUserProps,
-  setUserProps: () => {},
-});
+export const UserContext = React.createContext<UserContextProps | undefined>(
+  undefined
+);
+
+export const UserProvider: React.FC = ({ children }) => {
+  const [userProps, setUserProps] = React.useState<UserProps>(defaultUserProps);
+
+  React.useEffect(() => {
+    const storedUserContext = localStorage.getItem("CRIME_ALERT_USER");
+    setUserProps(
+      storedUserContext ? JSON.parse(storedUserContext) : defaultUserProps
+    );
+  }, []);
+
+  const updateUserProps = (newUser: UserProps) => {
+    setUserProps(newUser);
+    localStorage.setItem("CRIME_ALERT_USER", JSON.stringify(newUser));
+  };
+
+  const logout = () => {
+    setUserProps(defaultUserProps);
+    localStorage.removeItem("CRIME_ALERT_USER");
+  };
+
+  const contextValue: UserContextProps = {
+    userProps,
+    updateUserProps,
+    logout,
+  };
+
+  return (
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
+  );
+};

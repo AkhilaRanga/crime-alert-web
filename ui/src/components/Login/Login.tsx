@@ -35,7 +35,9 @@ function Login() {
   const [openSignUp, setOpenSignUp] = React.useState(false);
   const handleSignUpOpen = () => setOpenSignUp(true);
 
-  const { userProps, setUserProps } = React.useContext(UserContext);
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const updateUserProps = userContext?.updateUserProps;
 
   const navigate = useNavigate();
 
@@ -53,7 +55,8 @@ function Login() {
   };
 
   const handleForgotPassword = (event: any) => {
-    setUserProps({ ...userProps, isForgotPassword: true });
+    updateUserProps &&
+      updateUserProps({ ...userProps, isForgotPassword: true });
     navigate(RouterPath.REQUEST_OTP);
   };
 
@@ -89,13 +92,14 @@ function Login() {
         const validateResponse = data.split(",");
         setOpenSnackbar(true);
         setsuccessMessage(validateResponse[0]);
-        setUserProps({
-          email: formValues["email"],
-          isLoggedIn: validateResponse[0] === "User login successful",
-          userId: validateResponse[1],
-          isVerified: validateResponse[2] === "true",
-          location: validateResponse[3],
-        });
+        updateUserProps &&
+          updateUserProps({
+            email: formValues["email"],
+            isLoggedIn: validateResponse[0] === "User login successful",
+            userId: validateResponse[1],
+            isVerified: validateResponse[2] === "true",
+            location: validateResponse[3],
+          });
       });
   };
 

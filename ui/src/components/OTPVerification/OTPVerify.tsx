@@ -14,7 +14,9 @@ function OTPVerify() {
   const [formValues, setFormValues] = useState(initialState);
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
-  const { userProps, setUserProps } = React.useContext(UserContext);
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const updateUserProps = userContext?.updateUserProps;
 
   const navigate = useNavigate();
 
@@ -32,7 +34,7 @@ function OTPVerify() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         oneTimeToken: formValues["otp"],
-        email: userProps["email"],
+        email: userProps?.email,
       }),
     };
 
@@ -42,10 +44,10 @@ function OTPVerify() {
         console.log(data);
         setOpenSnackbar(true);
         setsuccessMessage(data);
-        setUserProps({ ...userProps, isVerified: true });
+        updateUserProps && updateUserProps({ ...userProps, isVerified: true });
 
         navigate(
-          userProps.isForgotPassword
+          userProps?.isForgotPassword
             ? RouterPath.RESET_PASSWORD
             : RouterPath.HOME
         );

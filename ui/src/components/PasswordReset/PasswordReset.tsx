@@ -15,7 +15,8 @@ function PasswordReset() {
   const [passwordError, setpasswordError] = useState<string | null>(null);
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
-  const { userProps, setUserProps } = React.useContext(UserContext);
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
 
   const handlePasswordChange = (event: any) => {
     if (!isValidPassword(event.target.value)) {
@@ -38,7 +39,7 @@ function PasswordReset() {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: userProps["email"],
+        email: userProps?.email,
         password: formValues["newPassword"],
       }),
     };

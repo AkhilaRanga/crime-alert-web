@@ -4,15 +4,13 @@ import Header from "./components/Header/Header";
 import Content from "./components/Content/Content";
 import Footer from "./components/Footer/Footer";
 import { BrowserRouter } from "react-router-dom";
-import { UserContext, UserProps } from "./contexts/UserContext";
+import { UserProvider } from "./contexts/UserContext";
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import { grey, teal } from "@material-ui/core/colors";
 
 export const appTestId = "app-test-id";
 
 function App() {
-  const [userProps, setUserProps] = React.useState<UserProps>({});
-  const value = { userProps, setUserProps };
   // theme
   const theme = createTheme({
     palette: {
@@ -28,13 +26,13 @@ function App() {
   return (
     <div className="App" data-testid={appTestId}>
       <ThemeProvider theme={theme}>
-        <UserContext.Provider value={value}>
+        <UserProvider>
           <Header />
           <BrowserRouter>
             <Content />
           </BrowserRouter>
           <Footer />
-        </UserContext.Provider>
+        </UserProvider>
       </ThemeProvider>
     </div>
   );

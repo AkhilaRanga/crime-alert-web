@@ -38,7 +38,8 @@ function LogoutModal(props: LogoutModalProps) {
   const { openModal, setOpenModal, userId } = props;
   const [formMessage, setFormMessage] = React.useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
-  const { userProps, setUserProps } = React.useContext(UserContext);
+  const userContext = React.useContext(UserContext);
+  const logout = userContext?.logout;
 
   const handleLogout = () => {
     const requestOptions = {
@@ -50,14 +51,7 @@ function LogoutModal(props: LogoutModalProps) {
       .then((response) => response.text())
       .then((data) => {
         setFormMessage(data);
-        setUserProps({
-          email: "",
-          userId: "",
-          location: "",
-          isLoggedIn: false,
-          isVerified: false,
-          isForgotPassword: false,
-        });
+        logout && logout();
         setOpenModal(false);
       });
   };

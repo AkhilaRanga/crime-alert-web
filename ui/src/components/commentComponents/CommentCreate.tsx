@@ -41,8 +41,9 @@ function CommentCreate(props: CommentCreateProps) {
   const [formMessage, setFormMessage] = React.useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
   const [commentField, setCommentField] = React.useState<string | undefined>();
-  const { userProps } = React.useContext(UserContext);
-  const userId = userProps.userId;
+  const userContext = React.useContext(UserContext);
+  const userProps = userContext?.userProps;
+  const userId = userProps?.userId;
 
   const handleCommentInputChange = (event: any) => {
     const { id, value } = event.target;
