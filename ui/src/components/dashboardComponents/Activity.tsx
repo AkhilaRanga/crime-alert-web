@@ -52,6 +52,7 @@ function Activity() {
       />
       <List>
         {(postsList &&
+          postsList.length > 0 &&
           postsList.map((post) => (
             <PostListItem
               post={post}
@@ -59,7 +60,7 @@ function Activity() {
               fetchData={fetchData}
               key={post.string_id}
             />
-          ))) || <></>}
+          ))) || <>No posts created. Create one using Create Post</>}
       </List>
     </div>
   );

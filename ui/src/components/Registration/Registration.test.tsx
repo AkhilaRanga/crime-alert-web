@@ -5,7 +5,12 @@ import Registration, { registrationTestId } from "./Registration";
 describe("Registration", () => {
   test("renders Login", () => {
     const { getByTestId } = render(
-      <Registration open={true} setOpen={jest.fn()} />
+      <Registration
+        open={true}
+        setOpen={jest.fn()}
+        setOpenSnackbar={jest.fn()}
+        setSuccessMessage={jest.fn()}
+      />
     );
     expect(getByTestId(registrationTestId)).toBeDefined();
   });
