@@ -36,6 +36,7 @@ function Feed() {
     >
       <List>
         {(postsList &&
+          postsList.length > 0 &&
           postsList.map((post) => (
             <PostListItem
               post={post}
@@ -43,7 +44,7 @@ function Feed() {
               fetchData={fetchData}
               key={post.string_id}
             />
-          ))) || <></>}
+          ))) || <>No posts available in your location yet</>}
       </List>
     </div>
   );

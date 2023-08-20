@@ -26,13 +26,12 @@ public class AuthenticationController {
 			@NotNull@PathParam("emailId")String emailId
 	) {
 		try {
-			
 			getAuthenticationService().requestOtp(emailId);
 			
 			return Response.status(200).entity("OTP sent successfully").build();
 			
 		} catch (ClientSideException ex) {
-    		return Response.status(400).entity(ex.getMessage()).build();
+    		return Response.status(400).entity(ex.toString()).build();
     	} catch (Exception ex) {
     		return Response.status(500).entity(ex.getMessage()).build();
     	}
@@ -52,7 +51,7 @@ public class AuthenticationController {
 			return Response.status(200).entity("OTP verified successfully").build();
 			
 		} catch (ClientSideException ex) {
-    		return Response.status(400).entity(ex.getMessage()).build();
+    		return Response.status(400).entity(ex.toString()).build();
     	} catch (Exception ex) {
     		return Response.status(500).entity(ex.getMessage()).build();
     	}

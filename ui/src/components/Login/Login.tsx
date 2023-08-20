@@ -28,7 +28,6 @@ const initialState = {
 function Login() {
   const [formValues, setFormValues] = useState(initialState);
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setpasswordError] = useState<string | null>(null);
   const [successMessage, setsuccessMessage] = useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
 
@@ -61,13 +60,6 @@ function Login() {
   };
 
   const handlePasswordChange = (event: any) => {
-    if (!isValidPassword(event.target.value)) {
-      setpasswordError(
-        "Password must contain - 8 characters, one uppercase, one lowercase, one digit, one special character"
-      );
-    } else {
-      setpasswordError(null);
-    }
     const { id, value } = event.target;
     setFormValues({
       ...formValues,
@@ -139,8 +131,6 @@ function Login() {
             fullWidth
             required
             variant="filled"
-            error={passwordError !== null}
-            helperText={(passwordError && passwordError) || ""}
           />
 
           <div>
@@ -176,8 +166,13 @@ function Login() {
           >
             Create a new account
           </Button>
-          <Registration open={openSignUp} setOpen={setOpenSignUp} />
         </form>
+        <Registration
+          open={openSignUp}
+          setOpen={setOpenSignUp}
+          setOpenSnackbar={setOpenSnackbar}
+          setSuccessMessage={setsuccessMessage}
+        />
       </Paper>
     </Grid>
   );

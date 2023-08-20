@@ -22,6 +22,8 @@ export const registrationTestId = "registration-test-id";
 interface RegistrationProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  setOpenSnackbar: (open: boolean) => void;
+  setSuccessMessage: (successMessage: string) => void;
 }
 
 const defaultValues = {
@@ -36,8 +38,6 @@ const defaultValues = {
 function Registration(props: RegistrationProps) {
   const handleClose = () => props.setOpen(false);
   const [formValues, setFormValues] = useState(defaultValues);
-  const [formMessage, setFormMessage] = useState<string | null>(null);
-  const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setpasswordError] = useState<string | null>(null);
   const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
@@ -118,8 +118,12 @@ function Registration(props: RegistrationProps) {
     };
 
     fetch("/services/api/users/register", requestOptions)
-      .then((response) => response.json())
-      .then((data) => setFormMessage(data));
+      .then((response) => response.text())
+      .then((data) => {
+        props.setOpenSnackbar(true);
+        props.setSuccessMessage(data);
+        handleClose();
+      });
   };
 
   return (
@@ -200,12 +204,6 @@ function Registration(props: RegistrationProps) {
             <Button variant="contained" color="primary" type="submit" fullWidth>
               Sign up
             </Button>
-            <Snackbar
-              open={openSnackbar}
-              autoHideDuration={6000}
-              message={formMessage}
-              onClose={() => setOpenSnackbar(false)}
-            />
           </form>
         </Box>
       </Modal>

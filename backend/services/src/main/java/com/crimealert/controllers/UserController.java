@@ -170,7 +170,7 @@ public class UserController {
     	} 
     	catch (ClientSideException ex) {
     		System.out.println("Validation Error:" + ex);
-    		return Response.status(400).entity(ex.getMessage()).build();
+    		return Response.status(400).entity(ex.toString()).build();
     	}
     	catch (Exception ex) {
     		System.out.println("Response failed:" + ex);

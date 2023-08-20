@@ -39,9 +39,13 @@ function OTPVerify() {
     };
 
     fetch("/services/api/auth/verifyOtp", requestOptions)
-      .then((response) => response.text())
+      .then((response) => {
+        if (response.ok) {
+          return response.text();
+        }
+        return Promise.reject(response);
+      })
       .then((data) => {
-        console.log(data);
         setOpenSnackbar(true);
         setsuccessMessage(data);
         updateUserProps && updateUserProps({ ...userProps, isVerified: true });
@@ -51,9 +55,13 @@ function OTPVerify() {
             ? RouterPath.RESET_PASSWORD
             : RouterPath.HOME
         );
+      })
+      .catch((response) => {
+        response.text().then((text: any) => {
+          setOpenSnackbar(true);
+          setsuccessMessage(text);
+        });
       });
-
-    //Need to display response message
   };
   const paperStyle = {
     padding: 20,

@@ -37,26 +37,31 @@ function OTPVerificationRequest() {
     event.preventDefault();
     const requestOptions = {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
     };
 
     fetch(
       `/services/api/auth/requestOtp/${formValues["email"]}`,
       requestOptions
     )
-      .then((response) => response.text())
+      .then((response) => {
+        if (response.ok) {
+          return response.text();
+        }
+        return Promise.reject(response);
+      })
       .then((data) => {
-        console.log(data);
         setOpenSnackbar(true);
         setsuccessMessage(data);
         updateUserProps &&
           updateUserProps({ ...userProps, email: formValues["email"] });
         navigate(RouterPath.VERIFY);
+      })
+      .catch((response) => {
+        response.text().then((text: any) => {
+          setOpenSnackbar(true);
+          setsuccessMessage(text);
+        });
       });
-
-    //Need to display response message
   };
   const paperStyle = {
     padding: 20,
