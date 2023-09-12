@@ -47,7 +47,7 @@ function ProfileWrapper() {
       email: userProfile?.email,
       location: userProfile?.location,
       "phone-number": userProfile?.phoneNumber,
-      password: passwordPlaceholder,
+      password: "",
       "confirm-password": "",
       "enable-notifications": userProfile?.enableNotifications,
     }),
@@ -208,27 +208,24 @@ function Profile(props: ProfileProps) {
             fullWidth
           />
           <TextField
-            required
             id="password"
             label="Password"
             type="password"
             autoComplete="current-password"
             variant="filled"
-            defaultValue={formValues.password}
             onChange={handlePasswordChange}
             error={passwordError !== null}
             helperText={(passwordError && passwordError) || ""}
             fullWidth
           />
           <TextField
-            required
+            required={Boolean(formValues["password"])}
             id="confirm-password"
             label="Confirm Password"
             type="password"
             autoComplete="current-password"
             variant="filled"
             onChange={handleConfirmPasswordChange}
-            defaultValue={formValues["confirm-password"]}
             fullWidth
           />
           <FormControlLabel

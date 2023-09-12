@@ -25,13 +25,8 @@ interface CreatePostProps {
 }
 
 function CreatePost(props: CreatePostProps) {
-  const {
-    openPostModal,
-    setOpenPostModal,
-    fetchData,
-    isEditMode,
-    post,
-  } = props;
+  const { openPostModal, setOpenPostModal, fetchData, isEditMode, post } =
+    props;
   const userContext = React.useContext(UserContext);
   const userProps = userContext?.userProps;
   const userId = userProps?.userId;
@@ -88,7 +83,7 @@ function CreatePost(props: CreatePostProps) {
       .then((response) => response.text())
       .then((data) => {
         setOpenSnackbar(true);
-        setFormMessage(data);
+        setFormMessage("Post created successfully!");
         setOpenPostModal(false);
         setFormValues({
           title: undefined,
@@ -96,6 +91,12 @@ function CreatePost(props: CreatePostProps) {
           location: undefined,
         });
         fetchData && fetchData();
+      })
+      .catch((response) => {
+        response.text().then((text: any) => {
+          setOpenSnackbar(true);
+          setFormMessage(text);
+        });
       });
   };
 

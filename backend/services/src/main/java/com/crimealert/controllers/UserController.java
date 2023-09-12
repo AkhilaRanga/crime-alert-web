@@ -57,6 +57,8 @@ public class UserController {
     			System.out.println("Validation Error:" + validateResponse);
     			return Response.status(400).entity(validateResponse).build();
     		}
+    	}catch (ClientSideException ex) {
+    		return Response.status(400).entity(ex.toString()).build();
     	}catch(Exception ex)
     	{
     		System.out.println("Response failed:" + ex);
@@ -137,7 +139,9 @@ public class UserController {
     {
     	try {
     		
-    		Document userLoggedIn = getUserLoginService().searchSession(user.getEmail());
+    		Document userDoc = getUserService().getUserProfile(user.getEmail());
+    		
+			Document userLoggedIn = getUserLoginService().searchSession(userDoc.getObjectId("_id").toString());
 			
 			if(userLoggedIn == null)
 				throw new ClientSideException("User is not logged In");
