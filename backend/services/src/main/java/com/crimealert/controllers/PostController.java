@@ -134,7 +134,10 @@ public class PostController {
     		List<String> videoIds = getPostService().getVideos(postId);
 			
 			if(videoIds.size() > 0)
+			{
+				System.out.println("More than one video cannot be uploaded");
 				return Response.status(400).entity("More than one video cannot be uploaded").build();
+			}
     		
     		if(postId != null && bodyVideo != null)
     		{

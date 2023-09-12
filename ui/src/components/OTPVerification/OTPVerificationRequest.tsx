@@ -18,6 +18,7 @@ function OTPVerificationRequest() {
   const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
   const userContext = React.useContext(UserContext);
   const userProps = userContext?.userProps;
+  const userEmail = userProps?.email;
   const updateUserProps = userContext?.updateUserProps;
   const navigate = useNavigate();
 
@@ -88,6 +89,7 @@ function OTPVerificationRequest() {
               id="email"
               placeholder="Enter email id"
               onChange={handleEmailChange}
+              defaultValue={userEmail}
               fullWidth
               required
               variant="filled"

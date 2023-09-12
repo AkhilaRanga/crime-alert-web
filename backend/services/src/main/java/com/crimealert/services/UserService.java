@@ -267,7 +267,7 @@ public class UserService {
 
         //update profile
 		if(user.getFullName() != null && (!user.getFullName().equals(searchedUser.get("fullName"))))
-			setData.append("fullName", searchedUser.get("fullName"));
+			setData.append("fullName", user.getFullName());
 		
 		System.out.println("Searched Full name:" +  searchedUser.get("fullName"));
 			

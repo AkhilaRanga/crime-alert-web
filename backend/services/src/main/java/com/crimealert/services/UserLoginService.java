@@ -118,7 +118,10 @@ public class UserLoginService {
 				.getDatabase(SessionConstant.DB)
 				.getCollection(SessionConstant.COLLECTION);
         
+        
 		Document sessionDocument = sessionsCollection.find(eq(SessionConstant.USER_ID, userId)).first();
+		
+		System.out.println("Document in session : " + sessionDocument);
 		
 		getDBConnectionService().closeDBConnection();
 		
