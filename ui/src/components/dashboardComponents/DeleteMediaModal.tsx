@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  CircularProgress,
   Divider,
   FormControl,
   FormControlLabel,
@@ -45,11 +46,13 @@ const useStyles = makeStyles({
 function DeleteMediaModal(props: DeleteMediaModal) {
   const classes = useStyles();
   const { openModal, setOpenModal, postId, fetchData } = props;
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [media, setMedia] = React.useState("Image");
   const [formMessage, setFormMessage] = React.useState<string | null>(null);
   const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
 
   const handleDeleteMedia = () => {
+    setLoading(true);
     if (media === "Image") {
       console.log("Images Delete");
       const requestOptions = {
@@ -61,7 +64,9 @@ function DeleteMediaModal(props: DeleteMediaModal) {
         .then((data) => {
           console.log(data);
           setFormMessage(data);
+          setOpenSnackbar(true);
           setOpenModal(false);
+          setLoading(false);
           fetchData && fetchData();
         });
     } else {
@@ -74,7 +79,9 @@ function DeleteMediaModal(props: DeleteMediaModal) {
         .then((response) => response.text())
         .then((data) => {
           setFormMessage(data);
+          setOpenSnackbar(true);
           setOpenModal(false);
+          setLoading(false);
           fetchData && fetchData();
         });
     }
@@ -128,6 +135,7 @@ function DeleteMediaModal(props: DeleteMediaModal) {
               color="primary"
               variant="contained"
               component="span"
+              disabled={loading}
               onClick={handleDeleteMedia}
             >
               Delete
@@ -139,6 +147,7 @@ function DeleteMediaModal(props: DeleteMediaModal) {
             message={formMessage}
             onClose={() => setOpenSnackbar(false)}
           />
+          {loading && <CircularProgress color="secondary" />}
         </CardContent>
         <Divider />
       </Card>

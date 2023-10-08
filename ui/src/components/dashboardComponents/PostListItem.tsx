@@ -72,8 +72,11 @@ function PostListItem(props: PostListItemProps) {
   const [commentDrawerOpen, setCommentDrawerOpen] = React.useState(false);
   const [photos, setPhotos] = React.useState<any>();
   const [videos, setVideos] = React.useState<any>();
+  const [photoLoading, setPhotoLoading] = React.useState<boolean>(false);
+  const [videoLoading, setVideoLoading] = React.useState<boolean>(false);
 
   const fetchId = async () => {
+    setPhotoLoading(true);
     const requestOptions = {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -96,6 +99,7 @@ function PostListItem(props: PostListItemProps) {
   };
 
   const fetchVideoId = async () => {
+    setVideoLoading(true);
     const requestOptions = {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -130,6 +134,7 @@ function PostListItem(props: PostListItemProps) {
       .then((response) => response.blob())
       .then((data) => {
         console.log("Downloaded photo");
+        setPhotoLoading(false);
         return URL.createObjectURL(data);
       })
       .catch((err) => {
@@ -152,6 +157,7 @@ function PostListItem(props: PostListItemProps) {
       .then((response) => response.blob())
       .then((data) => {
         console.log("Downloaded video");
+        setVideoLoading(false);
         return URL.createObjectURL(data);
       })
       .catch((err) => {
@@ -166,11 +172,16 @@ function PostListItem(props: PostListItemProps) {
     const videoId = await fetchVideoId();
     const imageURL = await fetchMedia(photoId);
     const videoURL = await fetchVideoMedia(videoId);
+    console.log("Ids");
+    console.log(photoId + " : " + videoId);
     setPhotos(imageURL);
     setVideos(videoURL);
+    console.log(Boolean(photoId) || Boolean(videoId));
+    setMediaExists(Boolean(photoId) || Boolean(videoId));
   };
   const [openSnackbar, setOpenSnackbar] = React.useState<boolean>(false);
   const [formMessage, setFormMessage] = React.useState<string | null>(null);
+  const [mediaExists, setMediaExists] = React.useState<boolean>(false);
 
   function handleOpenMenu(event: React.MouseEvent<HTMLButtonElement>) {
     setAnchorEl(event.currentTarget);
@@ -273,13 +284,14 @@ function PostListItem(props: PostListItemProps) {
               <GetMediaModal
                 openModal={showGetMediaModal}
                 setOpenModal={setShowGetMediaModal}
-                postId={string_id}
-                userId={userId}
                 fetchData={fetchData}
                 photos={photos}
                 videos={videos}
                 setPhotos={setPhotos}
                 setVideos={setVideos}
+                photoLoading={photoLoading}
+                videoLoading={videoLoading}
+                mediaExists={mediaExists}
               ></GetMediaModal>
             </Menu>
             <Typography variant="body2" component="p">
