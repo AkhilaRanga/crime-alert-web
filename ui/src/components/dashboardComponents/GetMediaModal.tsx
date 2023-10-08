@@ -2,6 +2,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  CircularProgress,
   Divider,
   IconButton,
   ImageList,
@@ -14,12 +15,13 @@ import React from "react";
 interface GetMediaModal {
   openModal: boolean;
   setOpenModal: (openModal: boolean) => void;
-  postId: string;
-  userId: string;
+  mediaExists: boolean;
   photos: any;
   videos: any;
   setPhotos: (photos: any) => void;
   setVideos: (videos: any) => void;
+  photoLoading: boolean;
+  videoLoading: boolean;
   fetchData?: () => void;
 }
 
@@ -42,8 +44,17 @@ const useStyles = makeStyles({
 
 function GetMediaModal(props: GetMediaModal) {
   const classes = useStyles();
-  const { openModal, setOpenModal, photos, videos, setPhotos, setVideos } =
-    props;
+  const {
+    openModal,
+    setOpenModal,
+    photos,
+    videos,
+    setPhotos,
+    setVideos,
+    photoLoading,
+    videoLoading,
+    mediaExists,
+  } = props;
 
   return (
     <Modal
@@ -73,18 +84,24 @@ function GetMediaModal(props: GetMediaModal) {
         />
         <Divider />
         <CardContent className={classes.cardContent}>
-          <ImageList
-            style={{ width: 500, height: 450 }}
-            cols={3}
-            rowHeight={164}
-          >
-            <img
-              style={{ width: 300, height: 300 }}
-              src={photos}
-              alt="Loading"
-            />
-            <video src={videos} width="500" height="500" controls></video>
-          </ImageList>
+          {!photoLoading && !videoLoading && (
+            <ImageList
+              style={{ width: 500, height: 450 }}
+              cols={3}
+              rowHeight={164}
+            >
+              <img
+                style={{ width: 300, height: 300 }}
+                src={photos}
+                alt="None"
+              />
+              <video src={videos} width="500" height="500" controls></video>
+            </ImageList>
+          )}
+
+          {(videoLoading || photoLoading) && (
+            <CircularProgress color="secondary" />
+          )}
         </CardContent>
         <Divider />
       </Card>

@@ -15,6 +15,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import React from "react";
 
 interface UploadMediaModal {
@@ -45,6 +46,7 @@ const useStyles = makeStyles({
 function UploadMediaModal(props: UploadMediaModal) {
   const classes = useStyles();
   const { openModal, setOpenModal, postId, fetchData } = props;
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [files, setFiles] = React.useState<Blob | any>();
   const [fileName, setFileName] = React.useState<string>("");
   const [media, setMedia] = React.useState("Image");
@@ -58,6 +60,7 @@ function UploadMediaModal(props: UploadMediaModal) {
   };
 
   const handleUploadMedia = () => {
+    setLoading(true);
     if (media === "Image") {
       console.log("Image Uploading");
       const formData = new FormData();
@@ -69,14 +72,28 @@ function UploadMediaModal(props: UploadMediaModal) {
       };
 
       fetch(`/services/api/posts/uploadPhoto`, requestOptions)
-        .then((response) => response.text())
+        .then((response) => {
+          if (response.ok) {
+            return response.text();
+          }
+          return Promise.reject(response);
+        })
         .then((data) => {
           console.log(data);
           setFormMessage(data);
+          setOpenSnackbar(true);
           setFileName("");
           setFiles(undefined);
           setOpenModal(false);
+          setLoading(false);
           fetchData && fetchData();
+        })
+        .catch((response) => {
+          response.text().then((text: any) => {
+            setOpenSnackbar(true);
+            setFormMessage(text);
+            setLoading(false);
+          });
         });
     } else {
       console.log("Video Uploading");
@@ -90,12 +107,25 @@ function UploadMediaModal(props: UploadMediaModal) {
       };
 
       fetch(`/services/api/posts/uploadVideo`, requestOptions)
-        .then((response) => response.text())
+        .then((response) => {
+          if (response.ok) {
+            return response.text();
+          }
+          return Promise.reject(response);
+        })
         .then((data) => {
           setFormMessage(data);
           setOpenSnackbar(true);
           setOpenModal(false);
+          setLoading(false);
           fetchData && fetchData();
+        })
+        .catch((response) => {
+          response.text().then((text: any) => {
+            setOpenSnackbar(true);
+            setFormMessage(text);
+            setLoading(false);
+          });
         });
     }
   };
@@ -103,6 +133,7 @@ function UploadMediaModal(props: UploadMediaModal) {
     <Modal
       open={openModal}
       onClose={() => {
+        setFormMessage("");
         setOpenModal(false);
       }}
       aria-labelledby="modal-modal-title"
@@ -141,6 +172,7 @@ function UploadMediaModal(props: UploadMediaModal) {
                 color="primary"
                 variant="contained"
                 component="span"
+                disabled={Boolean(fileName) || loading}
               >
                 Choose Image/Video
               </Button>
@@ -169,7 +201,7 @@ function UploadMediaModal(props: UploadMediaModal) {
               color="primary"
               variant="contained"
               component="span"
-              disabled={!fileName}
+              disabled={!fileName || loading}
               onClick={handleUploadMedia}
             >
               Upload
@@ -181,6 +213,7 @@ function UploadMediaModal(props: UploadMediaModal) {
             message={formMessage}
             onClose={() => setOpenSnackbar(false)}
           />
+          {loading && <CircularProgress color="secondary" />}
         </CardContent>
         <Divider />
       </Card>
